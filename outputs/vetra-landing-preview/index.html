@@ -1,0 +1,1280 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vetra — The operating system for veterinary clinics</title>
+  <meta name="description" content="Vetra is the AI operating system for veterinary clinics. Four agents — Mochi, Pip, Hazel, and Willow — handle phones, records, refills, and end-of-life care. So your team can be with patients." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ========================================================================
+       VETRA — design tokens
+       Owl spacing system: 8pt grid → 4 / 8 / 12 / 16 / 24 / 32 / 48 / 64 / 96 / 128
+       Type scale: 1.250 (Major Third) → 12 / 14 / 16 / 20 / 25 / 31 / 39 / 49 / 61 / 76
+       ====================================================================== */
+    :root {
+      /* Color */
+      --cream: #f6f8f4;
+      --paper: #ffffff;
+      --band: #ecf3ee;
+      --ink: #17231f;
+      --sage: #5a6862;
+      --sage-soft: #8a9690;
+      --line: #d5dfd8;
+      --line-soft: #e8eee9;
+      --pine: #0e5c43;
+      --pine-dark: #073d2e;
+      --pine-light: #e4f1e9;
+      --pine-mist: #f0f7f2;
+      --oxblood: #9a2638;
+      --gold: #b9822d;
+
+      /* Spacing — 8pt grid */
+      --s-1: 4px;
+      --s-2: 8px;
+      --s-3: 12px;
+      --s-4: 16px;
+      --s-5: 24px;
+      --s-6: 32px;
+      --s-7: 48px;
+      --s-8: 64px;
+      --s-9: 96px;
+      --s-10: 128px;
+
+      /* Type scale */
+      --t-xs: 12px;
+      --t-sm: 14px;
+      --t-base: 16px;
+      --t-lg: 20px;
+      --t-xl: 25px;
+      --t-2xl: 31px;
+      --t-3xl: 39px;
+      --t-4xl: 49px;
+      --t-5xl: 61px;
+      --t-6xl: 76px;
+
+      /* Layout */
+      --container: 1240px;
+      --gutter: clamp(20px, 4vw, 40px);
+      --radius-sm: 4px;
+      --radius: 8px;
+      --radius-lg: 14px;
+    }
+
+    /* ========================================================================
+       Base
+       ====================================================================== */
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      background: var(--cream);
+      color: var(--ink);
+      font-family: Inter, system-ui, -apple-system, sans-serif;
+      font-size: var(--t-base);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    a { color: inherit; text-decoration: none; }
+    img, svg { display: block; max-width: 100%; }
+    button { font: inherit; cursor: pointer; }
+
+    h1, h2, h3, h4 { margin: 0; font-family: Fraunces, Georgia, serif; letter-spacing: -.025em; line-height: 1.05; font-weight: 700; }
+    p { margin: 0; }
+
+    .wrap { max-width: var(--container); margin: 0 auto; padding: 0 var(--gutter); }
+
+    /* Eyebrow / mono label */
+    .mono {
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: var(--t-xs);
+      font-weight: 600;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--sage);
+    }
+    .mono.pine { color: var(--pine); }
+
+    /* ========================================================================
+       Buttons
+       ====================================================================== */
+    .btn {
+      display: inline-flex; align-items: center; gap: var(--s-2);
+      padding: var(--s-3) var(--s-6);
+      border-radius: 999px;
+      font-weight: 600; font-size: var(--t-sm);
+      border: 1.5px solid var(--pine);
+      background: var(--pine); color: var(--paper);
+      transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+    .btn:hover { background: var(--pine-dark); transform: translateY(-2px); box-shadow: 0 8px 18px -10px rgba(14,92,67,.55); }
+    .btn .arr { transition: transform .2s ease; }
+    .btn:hover .arr { transform: translateX(var(--s-1)); }
+
+    .btn.ghost { background: transparent; color: var(--ink); border-color: var(--ink); }
+    .btn.ghost:hover { background: var(--ink); color: var(--paper); }
+
+    .btn.light { background: var(--paper); color: var(--pine); border-color: var(--paper); }
+    .btn.light:hover { background: var(--pine-light); border-color: var(--pine-light); }
+
+    /* ========================================================================
+       Top YC-style announcement strip
+       ====================================================================== */
+    .announce {
+      background: var(--ink); color: var(--paper);
+      padding: var(--s-2) var(--gutter);
+      text-align: center;
+      font-size: var(--t-sm);
+    }
+    .announce a { color: var(--paper); text-decoration: underline; text-decoration-color: rgba(255,255,255,.4); text-underline-offset: 4px; }
+    .announce a:hover { text-decoration-color: var(--paper); }
+    .announce strong { color: #b9d8c8; font-weight: 700; }
+
+    /* ========================================================================
+       Header / nav
+       ====================================================================== */
+    header.site {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(246,248,244,.88);
+      backdrop-filter: saturate(140%) blur(10px);
+      border-bottom: 1px solid var(--line);
+    }
+    .nav {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: var(--s-5);
+      padding: var(--s-4) 0;
+    }
+    .brand {
+      font-family: Fraunces, Georgia, serif;
+      font-weight: 900; font-size: 28px; letter-spacing: -.02em;
+      color: var(--ink);
+    }
+    .brand span { color: var(--pine); }
+    .nav-links { display: flex; align-items: center; gap: var(--s-6); }
+    .nav-links a { color: var(--sage); font-size: var(--t-sm); font-weight: 500; }
+    .nav-links a:hover { color: var(--ink); }
+    .nav-cta { display: flex; align-items: center; gap: var(--s-3); }
+    .signin { font-size: var(--t-sm); color: var(--ink); font-weight: 600; }
+
+    /* ========================================================================
+       Hero
+       ====================================================================== */
+    .hero {
+      padding: var(--s-9) 0 var(--s-8);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(620px 420px at 88% -8%, rgba(251,181,145,.18), transparent 60%),
+        radial-gradient(560px 420px at 6% 12%, rgba(14,92,67,.08), transparent 60%),
+        radial-gradient(480px 360px at 70% 108%, rgba(196,184,214,.16), transparent 60%);
+    }
+    .hero > .wrap { position: relative; z-index: 1; }
+    .hero .grid {
+      display: grid;
+      grid-template-columns: 1.05fr 1fr;
+      gap: var(--s-8);
+      align-items: center;
+    }
+    .hero h1 {
+      font-size: clamp(44px, 6.4vw, 84px);
+      font-weight: 700;
+      max-width: 14ch;
+      line-height: 1.1;
+    }
+    .hero h1 em { font-style: italic; color: var(--pine); font-weight: 500; }
+    .hero .lede {
+      margin-top: var(--s-5);
+      color: var(--sage);
+      font-size: var(--t-lg);
+      line-height: 1.6;
+      max-width: 50ch;
+    }
+    .hero .actions {
+      display: flex; flex-wrap: wrap; gap: var(--s-3);
+      margin-top: var(--s-7);
+    }
+    .hero .trust {
+      margin-top: var(--s-5);
+      display: flex; flex-wrap: wrap; gap: var(--s-5);
+      color: var(--sage); font-size: var(--t-sm);
+    }
+    .hero .trust strong { color: var(--ink); font-weight: 600; }
+
+    /* Dashboard mock */
+    .mock {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow:
+        0 1px 0 rgba(23,35,31,.04),
+        0 30px 60px -40px rgba(23,35,31,.25),
+        0 18px 30px -28px rgba(14,92,67,.18);
+      overflow: hidden;
+    }
+    .mock-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--s-3) var(--s-5); border-bottom: 1px solid var(--line-soft);
+      background: linear-gradient(180deg, #fbfdfb, var(--paper));
+    }
+    .mock-head .dots { display: flex; gap: var(--s-2); }
+    .mock-head .dots i { width: 8px; height: 8px; border-radius: 999px; background: var(--line); display: block; }
+    .mock-head .url {
+      font-family: "JetBrains Mono", monospace; font-size: var(--t-xs); color: var(--sage);
+      background: var(--cream); padding: var(--s-1) var(--s-3); border-radius: 999px; border: 1px solid var(--line-soft);
+    }
+    .mock-head .live {
+      display: inline-flex; align-items: center; gap: var(--s-2);
+      font-family: "JetBrains Mono", monospace; font-size: var(--t-xs);
+      font-weight: 600; color: var(--pine); letter-spacing: .14em; text-transform: uppercase;
+    }
+    .mock-head .live::before {
+      content: ""; width: 6px; height: 6px; border-radius: 999px; background: var(--pine);
+      box-shadow: 0 0 0 4px rgba(14,92,67,.14);
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 0 0 5px rgba(14,92,67,.14); }
+      50%     { box-shadow: 0 0 0 9px rgba(14,92,67,.05); }
+    }
+
+    .mock-body { padding: var(--s-5); display: grid; gap: var(--s-4); }
+    .stats {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1px; background: var(--line-soft);
+      border: 1px solid var(--line-soft); border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .stat { background: var(--paper); padding: var(--s-4); }
+    .stat .num { font-family: Fraunces, Georgia, serif; font-size: var(--t-2xl); color: var(--ink); font-weight: 900; line-height: 1; letter-spacing: -.02em; }
+    .stat .num.pine { color: var(--pine); }
+    .stat .lbl { margin-top: var(--s-2); }
+    .stat .delta { font-size: var(--t-xs); font-weight: 600; color: var(--pine); margin-top: var(--s-1); }
+
+    .calls { display: grid; gap: var(--s-2); }
+    .call {
+      display: grid; grid-template-columns: 20px 1fr auto;
+      gap: var(--s-3); align-items: center;
+      padding: var(--s-3) var(--s-4);
+      background: var(--cream);
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius);
+      font-size: var(--t-sm);
+    }
+    .call .pill {
+      font-family: "JetBrains Mono", monospace; font-size: var(--t-xs); font-weight: 700;
+      letter-spacing: .12em; text-transform: uppercase;
+      padding: var(--s-1) var(--s-2); border-radius: var(--radius-sm);
+    }
+    .pill.er { background: rgba(154,38,56,.1); color: var(--oxblood); }
+    .pill.urg { background: rgba(185,130,45,.12); color: var(--gold); }
+    .pill.rt { background: var(--pine-light); color: var(--pine); }
+    .call .who { font-weight: 600; color: var(--ink); margin-bottom: var(--s-1); }
+    .call .meta { color: var(--sage); font-size: var(--t-xs); line-height: 1.4; }
+    .dot-emerg, .dot-urg, .dot-rt {
+      width: 8px; height: 8px; border-radius: 999px; margin: 0 auto;
+    }
+    .dot-emerg { background: var(--oxblood); }
+    .dot-urg { background: var(--gold); }
+    .dot-rt { background: var(--pine); }
+
+    /* ========================================================================
+       Hero strip — feature ticker
+       ====================================================================== */
+    .ticker {
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: var(--paper);
+      padding: 14px 0;
+      overflow: hidden;
+    }
+    .ticker-track {
+      display: flex; gap: var(--s-6); white-space: nowrap;
+      color: var(--sage); font-family: "JetBrains Mono", monospace;
+      font-size: var(--t-xs); font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
+      animation: marquee 38s linear infinite;
+    }
+    .ticker-track span { display: inline-flex; align-items: center; gap: 10px; }
+    .ticker-track span::before {
+      content: "●"; color: var(--pine); font-size: 8px;
+    }
+    @keyframes marquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* ========================================================================
+       Section base
+       ====================================================================== */
+    section { padding: var(--s-9) 0; }
+    .section-head { max-width: 760px; margin: 0 auto var(--s-8); text-align: center; }
+    .section-head h2 {
+      font-size: clamp(34px, 4.8vw, 56px);
+      margin-top: var(--s-4);
+      line-height: 1.1;
+    }
+    .section-head p {
+      margin-top: var(--s-5);
+      color: var(--sage); font-size: var(--t-lg); line-height: 1.6;
+    }
+
+    /* ========================================================================
+       Agent showcase — caregp style alternating rows
+       ====================================================================== */
+    .showcase { display: grid; gap: var(--s-9); }
+    .agent-row {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: var(--s-8);
+      align-items: center;
+    }
+    .agent-row.reverse .copy { order: 2; }
+    .agent-row .copy h3 {
+      font-size: clamp(28px, 3.6vw, 42px);
+      margin-top: var(--s-4);
+      max-width: 18ch;
+      line-height: 1.15;
+    }
+    .agent-row .copy p {
+      margin-top: var(--s-4);
+      color: var(--sage); font-size: var(--t-lg); line-height: 1.6;
+      max-width: 50ch;
+    }
+    .agent-row .copy .learn {
+      display: inline-flex; align-items: center; gap: var(--s-2);
+      margin-top: var(--s-5);
+      color: var(--pine); font-weight: 600; font-size: var(--t-sm);
+      padding-bottom: var(--s-1);
+      border-bottom: 1.5px solid var(--pine);
+      transition: gap .15s ease;
+    }
+    .agent-row .copy .learn:hover { gap: var(--s-3); }
+
+    .agent-card {
+      position: relative;
+      background: var(--pine-mist);
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius-lg);
+      padding: var(--s-7);
+      min-height: 420px;
+      overflow: hidden;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .agent-card.tone-band { background: linear-gradient(135deg, var(--band), var(--pine-mist)); }
+    .agent-card .character {
+      display: grid; grid-template-columns: 96px 1fr; gap: var(--s-4);
+      align-items: center; margin-bottom: var(--s-6);
+    }
+    .av {
+      width: 96px; height: 96px; border-radius: 999px;
+      display: grid; place-items: center;
+      font-family: Fraunces, serif; font-weight: 900; font-size: 44px; color: var(--paper);
+      border: 3px solid var(--paper);
+      box-shadow: 0 8px 22px -10px rgba(23,35,31,.3);
+    }
+    .av.mochi  { background: linear-gradient(135deg, #fbb591, #d97757); color: #5a2a18; }
+    .av.pip    { background: linear-gradient(135deg, #5fae87, #0e5c43); }
+    .av.hazel  { background: linear-gradient(135deg, #e3b964, #8a5a1a); }
+    .av.willow { background: linear-gradient(135deg, #c4b8d6, #6f6582); }
+    .av svg { width: 82%; height: 82%; }
+
+    /* Per-agent card tints — each agent gets its own signature tone */
+    .agent-card.card-mochi  { background: linear-gradient(150deg, #fdf3ed, #fbe6db); border-color: #f4dccd; }
+    .agent-card.card-pip    { background: linear-gradient(150deg, #eef7f1, #ddefe5); border-color: #cde6d8; }
+    .agent-card.card-hazel  { background: linear-gradient(150deg, #fbf4e3, #f6ead0); border-color: #eedfba; }
+    .agent-card.card-willow { background: linear-gradient(150deg, #f4f0f7, #ece6f4); border-color: #ddd3ea; }
+    .agent-card .name { font-family: Fraunces, serif; font-size: var(--t-2xl); font-weight: 900; letter-spacing: -.02em; }
+    .agent-card .role { color: var(--pine); font-size: var(--t-sm); margin-top: 2px; }
+
+    .agent-card .chat { display: grid; gap: var(--s-2); }
+    .bubble {
+      background: var(--paper); border: 1px solid var(--line-soft);
+      border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) var(--radius-sm);
+      padding: var(--s-3) var(--s-4); font-size: var(--t-sm); color: var(--ink);
+      max-width: 90%;
+    }
+    .bubble.me {
+      background: var(--pine); color: var(--paper); border-color: var(--pine);
+      border-radius: var(--radius-lg) var(--radius-lg) var(--radius-sm) var(--radius-lg);
+      margin-left: auto;
+    }
+    .bubble .who { display: block; font-size: var(--t-xs); letter-spacing: .14em; text-transform: uppercase; opacity: .7; margin-bottom: var(--s-1); font-weight: 700; }
+
+    /* Triage card variant */
+    .triage-card { display: grid; gap: var(--s-3); }
+    .triage-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--s-3) var(--s-4); background: var(--paper); border: 1px solid var(--line-soft); border-radius: var(--radius);
+      font-size: var(--t-sm);
+    }
+    .triage-row .lbl { color: var(--sage); font-size: var(--t-xs); }
+    .triage-row .val { font-weight: 600; }
+
+    /* ========================================================================
+       Workflow band — dark
+       ====================================================================== */
+    .band-cta {
+      background: var(--ink);
+      color: var(--paper);
+      border-radius: 0;
+    }
+    .band-cta .wrap {
+      padding-top: var(--s-9);
+      padding-bottom: var(--s-9);
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: var(--s-7);
+      align-items: end;
+    }
+    .band-cta h2 {
+      font-size: clamp(36px, 5.2vw, 60px);
+      color: var(--paper);
+      line-height: 1.15;
+      margin-top: var(--s-3);
+    }
+    .band-cta h2 em { font-style: italic; color: #b9d8c8; font-weight: 500; }
+    .band-cta p { color: rgba(255,255,255,.7); font-size: var(--t-lg); line-height: 1.6; max-width: 50ch; }
+    .band-cta .actions { display: flex; gap: var(--s-3); margin-top: var(--s-5); }
+
+    /* ========================================================================
+       Segments — who Vetra serves
+       ====================================================================== */
+    .segments { background: var(--cream); }
+    .segments .grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-5); margin-top: var(--s-6); }
+    .seg-card {
+      background: var(--paper);
+      border: 1.5px solid var(--ink);
+      border-radius: var(--radius-lg);
+      padding: var(--s-7);
+      display: flex; flex-direction: column;
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .seg-card:hover { transform: translateY(-3px); box-shadow: 0 18px 32px -22px rgba(23,35,31,.25); }
+    .seg-card .badge {
+      align-self: flex-start;
+      font-family: "JetBrains Mono", monospace; font-size: 10px; font-weight: 700;
+      letter-spacing: .14em; text-transform: uppercase;
+      padding: 6px 12px; border-radius: 999px;
+      background: var(--pine-light); color: var(--pine);
+    }
+    .seg-card.chain .badge { background: var(--ink); color: #b9d8c8; }
+    .seg-card h3 { font-size: var(--t-2xl); margin-top: var(--s-4); max-width: 16ch; line-height: 1.15; }
+    .seg-card .who { color: var(--sage); font-size: var(--t-xs); margin-top: var(--s-3); font-family: "JetBrains Mono", monospace; letter-spacing: .06em; text-transform: uppercase; }
+    .seg-card ul { list-style: none; padding: 0; margin: var(--s-5) 0; display: grid; gap: var(--s-2); flex: 1; }
+    .seg-card li { font-size: var(--t-sm); color: var(--ink); padding-left: var(--s-6); position: relative; line-height: 1.5; }
+    .seg-card li::before {
+      content: "✓"; position: absolute; left: 0; top: 0;
+      color: var(--pine); font-weight: 800;
+    }
+    .seg-card.chain li::before { color: var(--gold); }
+    .seg-card .cta-row { display: flex; gap: var(--s-3); margin-top: auto; padding-top: var(--s-4); border-top: 1px dashed var(--line); align-items: center; }
+    .seg-card .price-hint { font-size: var(--t-xs); color: var(--sage); margin-left: auto; font-family: "JetBrains Mono", monospace; letter-spacing: .06em; text-transform: uppercase; }
+
+    /* ========================================================================
+       PIMS integration strip
+       ====================================================================== */
+    .pims-strip {
+      background: var(--paper);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: var(--s-6) 0;
+    }
+    .pims-strip .row {
+      display: grid; grid-template-columns: auto 1fr;
+      gap: var(--s-6); align-items: center;
+    }
+    .pims-strip .title { max-width: 260px; }
+    .pims-strip .title .mono { color: var(--pine); }
+    .pims-strip .title h3 { font-family: Fraunces, serif; font-size: var(--t-xl); margin-top: var(--s-2); letter-spacing: -.02em; line-height: 1.15; }
+    .pims-logos {
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      gap: 1px; background: var(--line-soft);
+      border: 1px solid var(--line-soft); border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .pims-logo {
+      background: var(--paper);
+      min-height: 56px;
+      display: grid; place-items: center;
+      padding: var(--s-3);
+      font-family: Fraunces, serif; font-weight: 700; font-size: 13px;
+      color: var(--ink); letter-spacing: -.01em;
+      text-align: center;
+    }
+    .pims-logo small { display: block; font-family: Inter, sans-serif; font-size: var(--t-xs); color: var(--sage); font-weight: 500; margin-top: var(--s-1); letter-spacing: .06em; text-transform: uppercase; }
+
+    /* ========================================================================
+       Compliance & trust
+       ====================================================================== */
+    .compliance {
+      background: var(--paper);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+    .compliance .row {
+      display: grid; grid-template-columns: auto 1fr auto;
+      gap: var(--s-7); align-items: center;
+      padding: var(--s-7) 0;
+    }
+    .compliance .badges { display: flex; gap: var(--s-4); align-items: center; }
+    .compliance .badge {
+      width: 64px; height: 64px; border-radius: var(--radius-lg);
+      background: var(--pine-light);
+      display: grid; place-items: center; color: var(--pine);
+      font-family: "JetBrains Mono", monospace; font-size: var(--t-xs); font-weight: 700; text-align: center; line-height: 1.1;
+      border: 1px solid var(--line-soft);
+    }
+    .compliance h3 { font-size: var(--t-xl); }
+    .compliance p { color: var(--sage); margin-top: var(--s-2); font-size: var(--t-sm); }
+    .compliance .meta-stat { text-align: right; }
+    .compliance .meta-stat .num { font-family: Fraunces, serif; font-size: var(--t-3xl); color: var(--pine); font-weight: 900; line-height: 1; }
+    .compliance .meta-stat .lbl { font-size: var(--t-xs); letter-spacing: .12em; text-transform: uppercase; color: var(--sage); margin-top: var(--s-2); font-family: "JetBrains Mono", monospace; }
+
+    /* Trust logos */
+    .trust-section { background: var(--cream); }
+    .trust-section .head { text-align: center; margin-bottom: var(--s-8); }
+    .trust-section h2 { font-size: clamp(28px, 3.6vw, 42px); line-height: 1.15; margin-top: var(--s-4); }
+    .trust-section p { color: var(--sage); margin-top: var(--s-4); font-size: var(--t-base); line-height: 1.5; }
+
+    .logo-grid-title { font-size: var(--t-xs); font-weight: 600; color: var(--sage); margin: var(--s-6) 0 var(--s-5); text-align: center; letter-spacing: .06em; text-transform: uppercase; }
+    .logo-grid {
+      display: grid; grid-template-columns: repeat(6, 1fr); gap: 1px;
+      background: var(--line-soft); border: 1px solid var(--line-soft);
+      border-radius: var(--radius); overflow: hidden;
+    }
+    .logo-cell {
+      background: var(--paper);
+      min-height: 100px;
+      display: grid; place-items: center;
+      padding: var(--s-4);
+      text-align: center;
+      font-family: Fraunces, serif; font-weight: 700; font-size: var(--t-base);
+      color: var(--ink); letter-spacing: -.01em;
+      transition: background .15s ease;
+    }
+    .logo-cell:hover { background: var(--pine-mist); }
+    .logo-cell small { display: block; color: var(--sage); font-family: Inter, sans-serif; font-size: var(--t-xs); font-weight: 500; margin-top: var(--s-1); letter-spacing: .08em; text-transform: uppercase; }
+
+    /* ========================================================================
+       Testimonials
+       ====================================================================== */
+    .quotes {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: var(--s-5);
+    }
+    .quote {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      padding: var(--s-6);
+      display: flex; flex-direction: column; gap: var(--s-4);
+    }
+    .quote-logo {
+      width: 56px; height: 56px; border-radius: var(--radius-lg);
+      background: var(--pine-mist);
+      display: grid; place-items: center;
+      font-family: Fraunces, serif; font-weight: 900; font-size: var(--t-2xl); color: var(--pine);
+    }
+    .quote blockquote {
+      margin: 0;
+      font-family: Fraunces, serif; font-size: var(--t-xl);
+      line-height: 1.4; letter-spacing: -.02em; color: var(--ink); font-weight: 500;
+    }
+    .quote .attr { color: var(--sage); font-size: var(--t-sm); margin-top: auto; }
+    .quote .attr strong { color: var(--ink); font-weight: 600; display: block; margin-bottom: var(--s-1); }
+
+    /* ========================================================================
+       Mission band
+       ====================================================================== */
+    .mission {
+      background: var(--pine-mist);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+    .mission .grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-7); align-items: center;
+    }
+    .mission h2 { font-size: clamp(32px, 4.4vw, 52px); line-height: 1.15; margin-top: var(--s-3); }
+    .mission p { margin-top: var(--s-4); color: var(--sage); font-size: var(--t-lg); line-height: 1.6; max-width: 50ch; }
+    .mission .pic {
+      border-radius: var(--radius-lg);
+      background: linear-gradient(135deg, var(--pine), var(--pine-dark));
+      color: var(--paper);
+      padding: var(--s-8);
+      min-height: 320px;
+      display: flex; flex-direction: column; justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+    .mission .pic::before {
+      content: ""; position: absolute; inset: 0;
+      background: radial-gradient(circle at 80% 20%, rgba(255,255,255,.12), transparent 50%);
+    }
+    .mission .pic .num { font-family: Fraunces, serif; font-size: clamp(64px, 10vw, 120px); font-weight: 900; line-height: 1; letter-spacing: -.04em; position: relative; }
+    .mission .pic .cap { font-size: var(--t-lg); position: relative; color: rgba(255,255,255,.85); max-width: 28ch; margin-top: var(--s-3); line-height: 1.5; }
+    .mission .pic .meta { font-family: "JetBrains Mono", monospace; font-size: var(--t-xs); letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.6); position: relative; }
+
+    /* ========================================================================
+       Final CTA
+       ====================================================================== */
+    .final-cta {
+      background: var(--cream);
+      position: relative;
+      text-align: center;
+    }
+    .final-cta .card {
+      background: var(--paper);
+      border: 1.5px solid var(--ink);
+      border-radius: var(--radius-lg);
+      padding: var(--s-9) var(--s-7);
+      max-width: 880px; margin: 0 auto;
+      box-shadow: 8px 8px 0 var(--pine);
+    }
+    .final-cta h2 { font-size: clamp(34px, 4.8vw, 58px); margin-top: var(--s-4); line-height: 1.15; }
+    .final-cta p { color: var(--sage); margin-top: var(--s-4); font-size: var(--t-lg); line-height: 1.6; max-width: 56ch; margin-left: auto; margin-right: auto; }
+    .final-cta .actions { display: inline-flex; gap: var(--s-3); margin-top: var(--s-6); flex-wrap: wrap; justify-content: center; }
+
+    /* ========================================================================
+       Footer
+       ====================================================================== */
+    footer.site {
+      background: var(--ink); color: var(--paper);
+      padding: var(--s-8) 0 var(--s-5);
+    }
+    footer .top {
+      display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr;
+      gap: var(--s-7);
+      padding-bottom: var(--s-7);
+      border-bottom: 1px solid rgba(255,255,255,.1);
+    }
+    footer .brand { color: var(--paper); font-size: var(--t-2xl); font-weight: 900; }
+    footer .brand span { color: #b9d8c8; }
+    footer .blurb { color: rgba(255,255,255,.6); font-size: var(--t-sm); margin-top: var(--s-4); max-width: 36ch; line-height: 1.55; }
+    footer h4 { font-family: Inter, sans-serif; font-size: var(--t-xs); letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.6); margin-bottom: var(--s-4); font-weight: 600; }
+    footer ul { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--s-2); }
+    footer ul a { color: rgba(255,255,255,.9); font-size: var(--t-sm); display: inline-flex; align-items: center; gap: var(--s-2); }
+    footer ul a:hover { color: #b9d8c8; }
+    footer .agent-dot { width: 9px; height: 9px; border-radius: 999px; flex: none; }
+    footer .agent-dot.mochi  { background: linear-gradient(135deg, #fbb591, #d97757); }
+    footer .agent-dot.pip    { background: linear-gradient(135deg, #5fae87, #0e5c43); }
+    footer .agent-dot.hazel  { background: linear-gradient(135deg, #e3b964, #8a5a1a); }
+    footer .agent-dot.willow { background: linear-gradient(135deg, #c4b8d6, #6f6582); }
+    footer .bottom {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: var(--s-6);
+      color: rgba(255,255,255,.5); font-size: var(--t-xs);
+    }
+
+    /* ========================================================================
+       Responsive
+       ====================================================================== */
+    @media (max-width: 980px) {
+      .hero { padding: var(--s-7) 0 var(--s-6); }
+      .hero .grid,
+      .band-cta .wrap,
+      .mission .grid,
+      .agent-row,
+      .segments .grid,
+      .pims-strip .row { grid-template-columns: 1fr; gap: var(--s-6); }
+      .agent-row.reverse .copy { order: initial; }
+      .quotes { grid-template-columns: 1fr; }
+      .logo-grid { grid-template-columns: repeat(3, 1fr); }
+      .pims-logos { grid-template-columns: repeat(3, 1fr); }
+      footer .top { grid-template-columns: 1fr 1fr; }
+      .compliance .row { grid-template-columns: 1fr; text-align: left; }
+      .compliance .meta-stat { text-align: left; }
+      .nav-links { display: none; }
+    }
+    @media (max-width: 640px) {
+      .stats { grid-template-columns: 1fr; }
+      .logo-grid { grid-template-columns: repeat(2, 1fr); }
+      footer .top { grid-template-columns: 1fr; }
+      footer .bottom { flex-direction: column; gap: 8px; }
+      .agent-card { padding: var(--s-5); min-height: auto; }
+      .final-cta .card { padding: var(--s-7) var(--s-5); box-shadow: 6px 6px 0 var(--pine); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Announcement -->
+  <div class="announce">
+    <strong>★</strong> Meet the team: <strong>Mochi</strong> answers, <strong>Pip</strong> files, <strong>Hazel</strong> follows up, <strong>Willow</strong> stays close. <a href="#demo">Book a demo →</a>
+  </div>
+
+  <!-- Header -->
+  <header class="site">
+    <div class="wrap nav">
+      <a class="brand" href="#">Ve<span>tra</span></a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#agents">Agents</a>
+        <a href="#segments">For independents</a>
+        <a href="#segments">For groups</a>
+        <a href="#trust">Clinics</a>
+        <a href="#mission">Mission</a>
+      </nav>
+      <div class="nav-cta">
+        <a class="signin" href="#">Sign in</a>
+        <a class="btn" href="#demo">Book live demo <span class="arr">→</span></a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="wrap grid">
+      <div>
+        <div class="mono pine">★ The operating system for veterinary clinics</div>
+        <h1 style="margin-top: var(--s-4);">
+          A team of <em>four</em> agents for every part of the clinic.
+        </h1>
+        <p class="lede">
+          Vetra is the AI operating system for veterinary practices. Four purpose‑built agents handle the phones, the paperwork, the refills, and the conversations that need the most care — so your team can be with patients.
+        </p>
+        <div class="actions">
+          <a class="btn" href="#demo">Book live demo <span class="arr">→</span></a>
+          <a class="btn ghost" href="tel:+19262171472">Call Mochi · +1 (926) 217‑1472</a>
+        </div>
+        <div class="trust">
+          <span><strong>★ 4.9</strong> &nbsp;from clinic operators</span>
+          <span>·</span>
+          <span>Built with <strong>UIUC VetMed</strong></span>
+          <span>·</span>
+          <span><strong>SOC 2 II</strong> · HIPAA‑aware</span>
+        </div>
+      </div>
+
+      <!-- Dashboard mock -->
+      <div class="mock" aria-hidden="true">
+        <div class="mock-head">
+          <div class="dots"><i></i><i></i><i></i></div>
+          <div class="url">app.vetra.ai / ops · all sites</div>
+          <div class="live">Live · 12 sites</div>
+        </div>
+        <div class="mock-body">
+          <div class="stats">
+            <div class="stat">
+              <div class="num pine">1,847</div>
+              <div class="mono lbl">Calls · 12 sites · 24h</div>
+              <div class="delta">↑ 18% vs yesterday</div>
+            </div>
+            <div class="stat">
+              <div class="num">$14.2k</div>
+              <div class="mono lbl">Revenue recovered</div>
+              <div class="delta">Cross‑site routing</div>
+            </div>
+            <div class="stat">
+              <div class="num">21</div>
+              <div class="mono lbl">Emergencies triaged</div>
+              <div class="delta">Full context sent</div>
+            </div>
+          </div>
+
+          <div class="calls">
+            <div class="call">
+              <div class="dot-emerg"></div>
+              <div>
+                <div class="who">Luna · DSH Cat · Maple St.</div>
+                <div class="meta">Mochi → Rio handoff · Northside ER, 0.8 mi · context sent</div>
+              </div>
+              <div class="pill er">Emergency</div>
+            </div>
+            <div class="call">
+              <div class="dot-urg"></div>
+              <div>
+                <div class="who">Buddy · Golden · Riverbend #2</div>
+                <div class="meta">Pip flagged ALT ↑ on IDEXX panel · vet notified</div>
+              </div>
+              <div class="pill urg">Lab flag</div>
+            </div>
+            <div class="call">
+              <div class="dot-rt"></div>
+              <div>
+                <div class="who">Max · Lab · Oakridge</div>
+                <div class="meta">Hazel pre‑fetched carprofen refill · Chewy routed</div>
+              </div>
+              <div class="pill rt">Refill</div>
+            </div>
+            <div class="call">
+              <div class="dot-rt" style="background:#8a7cb3"></div>
+              <div>
+                <div class="who">Bella · Senior Beagle · Cypress</div>
+                <div class="meta">Willow scheduled QoL check‑in · owner consent received</div>
+              </div>
+              <div class="pill rt" style="background:#ece6f4; color:#6f6582">QoL</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Ticker -->
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <span>Available 24/7</span>
+      <span>First‑ring pickup</span>
+      <span>Emergency triage in seconds</span>
+      <span>Context‑aware ER transfers</span>
+      <span>Calendar booking</span>
+      <span>Missed call recovery</span>
+      <span>SOAP‑style summaries</span>
+      <span>Multi‑species triage</span>
+      <span>Available 24/7</span>
+      <span>First‑ring pickup</span>
+      <span>Emergency triage in seconds</span>
+      <span>Context‑aware ER transfers</span>
+      <span>Calendar booking</span>
+      <span>Missed call recovery</span>
+      <span>SOAP‑style summaries</span>
+      <span>Multi‑species triage</span>
+    </div>
+  </div>
+
+  <!-- Agent Showcase -->
+  <section id="agents">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="mono pine">★ Meet the team</div>
+        <h2>Four agents. One operating system. Every clinic workflow.</h2>
+        <p>Mochi answers, Pip files, Hazel follows up, Willow stays close. Together they cover the front desk, the chart, the pharmacy, and the conversations that matter most.</p>
+      </div>
+
+      <div class="showcase">
+
+        <!-- Mochi — Voice -->
+        <article class="agent-row">
+          <div class="copy">
+            <div class="mono pine">★ Voice &amp; front desk</div>
+            <h3>Mochi picks up. Every call, every time.</h3>
+            <p>
+              First‑ring pickup, evenings, weekends, 3AM. Multi‑species triage in under 60 seconds. Mochi books routine cases on your calendar, queues urgent ones for staff, and routes emergencies to the nearest open ER with full context.
+            </p>
+            <ul style="list-style:none; padding:var(--s-4) 0 0; margin:var(--s-4) 0 0; border-top:1px solid var(--line); display:grid; gap:8px; font-size:var(--t-sm); color:var(--sage);">
+              <li>★ First‑ring pickup · 24/7 · no hold music</li>
+              <li>★ Multi‑species triage with red‑flag screening</li>
+              <li>★ Cross‑site overflow routing (groups)</li>
+              <li>★ SOAP‑style call summaries · searchable, exportable</li>
+            </ul>
+            <a class="learn" style="margin-top:var(--s-5);" href="#">Learn more about Mochi <span>→</span></a>
+          </div>
+          <div class="agent-card card-mochi">
+            <div class="character">
+              <div class="av mochi">
+                <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <polygon points="12,30 16,7 31,22" fill="#fff"/>
+                  <polygon points="52,30 48,7 33,22" fill="#fff"/>
+                  <polygon points="17,26 18,14 27,21" fill="#f7b79a"/>
+                  <polygon points="47,26 46,14 37,21" fill="#f7b79a"/>
+                  <ellipse cx="32" cy="38" rx="20" ry="17" fill="#fff"/>
+                  <circle cx="25" cy="37" r="2.7" fill="#6b3826"/>
+                  <circle cx="39" cy="37" r="2.7" fill="#6b3826"/>
+                  <polygon points="29,42.5 35,42.5 32,46" fill="#d97757"/>
+                  <path d="M32 46c0 2-2 3-3.6 2.3M32 46c0 2 2 3 3.6 2.3" stroke="#c98a6e" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+                  <g stroke="#ead0c0" stroke-width="1.3" stroke-linecap="round">
+                    <path d="M22 40 11 38.5"/><path d="M22 43 12 44.5"/>
+                    <path d="M42 40 53 38.5"/><path d="M42 43 52 44.5"/>
+                  </g>
+                </svg>
+              </div>
+              <div>
+                <div class="name">Mochi</div>
+                <div class="role">Voice &amp; front desk</div>
+              </div>
+            </div>
+            <div class="chat">
+              <div class="bubble"><span class="who">Caller</span>My dog got into chocolate. Are you open?</div>
+              <div class="bubble me"><span class="who">Mochi</span>That can be urgent. I'm collecting details and routing you to care now.</div>
+              <div class="bubble"><span class="who">Caller</span>He's about 25 pounds, ate maybe a dark bar.</div>
+              <div class="bubble me"><span class="who">Mochi</span>Got it — flagging emergency, transferring to Northside ER, 0.8 mi away. They'll have your full intake before you arrive.</div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Pip — Records / PIMS -->
+        <article class="agent-row reverse">
+          <div class="copy">
+            <div class="mono pine">★ Records &amp; PIMS</div>
+            <h3>Pip files every fax, lab, and referral into the right chart.</h3>
+            <p>
+              Inbound IDEXX/Antech results, faxed referrals, microchip records, discharge letters — Pip parses each one, matches it to the patient, and files it in the PIMS you already use. Abnormal lab values get flagged to the DVM in real time.
+            </p>
+            <ul style="list-style:none; padding:var(--s-4) 0 0; margin:var(--s-4) 0 0; border-top:1px solid var(--line); display:grid; gap:8px; font-size:var(--t-sm); color:var(--sage);">
+              <li>★ Works across AVImark, Cornerstone, ezyVet, Provet, IntraVet, Pulse, Hippo</li>
+              <li>★ IDEXX &amp; Antech parsing with abnormal‑value flagging</li>
+              <li>★ Discharge summary &amp; referral letter drafting</li>
+              <li>★ Microchip &amp; vaccine registry sync</li>
+            </ul>
+            <a class="learn" style="margin-top:var(--s-5);" href="#">Learn more about Pip <span>→</span></a>
+          </div>
+          <div class="agent-card card-pip">
+            <div class="character">
+              <div class="av pip">
+                <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <polygon points="32,6 28,16 36,16" fill="#fff"/>
+                  <ellipse cx="32" cy="37" rx="17" ry="19" fill="#fff"/>
+                  <path d="M41 28c6 3 9 10 6 18-5-1-9-5-10-11z" fill="#cfe6da"/>
+                  <circle cx="27" cy="33" r="2.6" fill="#0e3d2e"/>
+                  <circle cx="37" cy="33" r="2.6" fill="#0e3d2e"/>
+                  <polygon points="29,38 35,38 32,43" fill="#e3b964"/>
+                  <g stroke="#e3b964" stroke-width="1.8" stroke-linecap="round">
+                    <path d="M28 55 28 59"/><path d="M36 55 36 59"/>
+                  </g>
+                </svg>
+              </div>
+              <div>
+                <div class="name">Pip</div>
+                <div class="role">Records &amp; PIMS allocation</div>
+              </div>
+            </div>
+            <div class="triage-card">
+              <div class="triage-row"><span class="lbl">Inbound</span><span class="val">IDEXX panel · CBC + chem</span></div>
+              <div class="triage-row"><span class="lbl">Patient match</span><span class="val">Buddy · Golden, 8y</span></div>
+              <div class="triage-row"><span class="lbl">PIMS</span><span class="val">ezyVet · chart updated</span></div>
+              <div class="triage-row"><span class="lbl">Flag</span><span class="val" style="color:var(--oxblood)">ALT 142 ↑ · DVM notified</span></div>
+              <div class="triage-row"><span class="lbl">Time saved</span><span class="val" style="color:var(--pine)">4.2 min / record</span></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Hazel — Refills, reminders, follow-up -->
+        <article class="agent-row">
+          <div class="copy">
+            <div class="mono pine">★ Refills, reminders &amp; follow‑up</div>
+            <h3>Hazel knows what Buddy needs before Buddy does.</h3>
+            <p>
+              Pre‑fetches chronic refills before they run out. Sends vaccine and wellness reminders by species and lifestyle. Runs the 24‑hour, 72‑hour, and 2‑week post‑visit check‑ins your team never has time for. Routes scripts to Chewy, Vetsource, or the in‑clinic pharmacy.
+            </p>
+            <ul style="list-style:none; padding:var(--s-4) 0 0; margin:var(--s-4) 0 0; border-top:1px solid var(--line); display:grid; gap:8px; font-size:var(--t-sm); color:var(--sage);">
+              <li>★ Chronic refill pre‑fetch (NSAIDs, thyroid, seizure, derm)</li>
+              <li>★ Monthly preventive compliance (HW, flea, tick)</li>
+              <li>★ Post‑visit 24h / 72h / 2‑wk follow‑up cadence</li>
+              <li>★ Insurance pre‑auth helpers · pharmacy routing</li>
+            </ul>
+            <a class="learn" style="margin-top:var(--s-5);" href="#">Learn more about Hazel <span>→</span></a>
+          </div>
+          <div class="agent-card card-hazel">
+            <div class="character">
+              <div class="av hazel">
+                <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M17 24c-6 1-9 9-7 19 5 1 10-3 11-10z" fill="#ebd4a6"/>
+                  <path d="M47 24c6 1 9 9 7 19-5 1-10-3-11-10z" fill="#ebd4a6"/>
+                  <ellipse cx="32" cy="33" rx="17" ry="15" fill="#fff"/>
+                  <ellipse cx="32" cy="43" rx="10" ry="9" fill="#fff"/>
+                  <circle cx="25" cy="31" r="2.7" fill="#6b4a18"/>
+                  <circle cx="39" cy="31" r="2.7" fill="#6b4a18"/>
+                  <ellipse cx="32" cy="41" rx="3.6" ry="2.8" fill="#6b4a18"/>
+                  <path d="M32 43.8v3.4c0 2-2 3-3.6 2.3M32 47.2c0 2 2 3 3.6 2.3" stroke="#caa86a" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div>
+                <div class="name">Hazel</div>
+                <div class="role">Refills, reminders &amp; follow‑up</div>
+              </div>
+            </div>
+            <div class="triage-card">
+              <div class="triage-row"><span class="lbl">Patient</span><span class="val">Max · Lab, 11y · arthritis</span></div>
+              <div class="triage-row"><span class="lbl">Rx</span><span class="val">Carprofen 75mg · 14 days left</span></div>
+              <div class="triage-row"><span class="lbl">Pre‑fetched</span><span class="val" style="color:var(--pine)">✓ 30‑day refill drafted</span></div>
+              <div class="triage-row"><span class="lbl">Route</span><span class="val">Chewy · auto‑ship</span></div>
+              <div class="triage-row"><span class="lbl">DVM action</span><span class="val">1‑tap approve</span></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Willow — Companion / EOL -->
+        <article class="agent-row reverse">
+          <div class="copy">
+            <div class="mono pine">★ Companion &amp; end‑of‑life</div>
+            <h3>Willow stays close when the conversations get hard.</h3>
+            <p>
+              Lap‑of‑Love‑style quality‑of‑life assessments. Hospice planning. Euthanasia scheduling and home‑visit coordination. Aftercare follow‑up and grief resources. Willow handles the conversations your staff dread — with the care families remember.
+            </p>
+            <ul style="list-style:none; padding:var(--s-4) 0 0; margin:var(--s-4) 0 0; border-top:1px solid var(--line); display:grid; gap:8px; font-size:var(--t-sm); color:var(--sage);">
+              <li>★ HHHHHMM &amp; QoL scale check‑ins with the family</li>
+              <li>★ Hospice care plan + medication titration support</li>
+              <li>★ In‑home euthanasia scheduling &amp; aftercare coordination</li>
+              <li>★ Bereavement follow‑up · multilingual empathy support</li>
+            </ul>
+            <a class="learn" style="margin-top:var(--s-5);" href="#">Learn more about Willow <span>→</span></a>
+          </div>
+          <div class="agent-card card-willow">
+            <div class="character">
+              <div class="av willow">
+                <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <ellipse cx="25" cy="16" rx="5" ry="14" fill="#fff"/>
+                  <ellipse cx="39" cy="16" rx="5" ry="14" fill="#fff"/>
+                  <ellipse cx="25" cy="17" rx="2.3" ry="10" fill="#ddd3ea"/>
+                  <ellipse cx="39" cy="17" rx="2.3" ry="10" fill="#ddd3ea"/>
+                  <ellipse cx="32" cy="41" rx="16" ry="15" fill="#fff"/>
+                  <circle cx="26" cy="40" r="2.6" fill="#514860"/>
+                  <circle cx="38" cy="40" r="2.6" fill="#514860"/>
+                  <polygon points="29.5,45 34.5,45 32,47.6" fill="#b9a3d6"/>
+                  <path d="M32 47.6v2.2M32 49.8c-1.4 1-3 .6-3.6-.6M32 49.8c1.4 1 3 .6 3.6-.6" stroke="#cbbfe0" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div>
+                <div class="name">Willow</div>
+                <div class="role">Companion &amp; end‑of‑life</div>
+              </div>
+            </div>
+            <div class="triage-card">
+              <div class="triage-row"><span class="lbl">Patient</span><span class="val">Bella · Beagle, 14y</span></div>
+              <div class="triage-row"><span class="lbl">QoL score</span><span class="val" style="color:#8a6020">42 / 70 · re‑check 7d</span></div>
+              <div class="triage-row"><span class="lbl">Plan</span><span class="val">Pain plan adjusted · DVM consult</span></div>
+              <div class="triage-row"><span class="lbl">Family</span><span class="val">Home visit option offered</span></div>
+              <div class="triage-row"><span class="lbl">Aftercare</span><span class="val" style="color:#6f6582">Grief resources sent</span></div>
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- PIMS integrations strip -->
+  <div class="pims-strip">
+    <div class="wrap row">
+      <div class="title">
+        <div class="mono">★ Integrations</div>
+        <h3>PIMS‑agnostic. Pip works inside the chart you already use.</h3>
+      </div>
+      <div class="pims-logos">
+        <div class="pims-logo">AVImark<small>Covetrus</small></div>
+        <div class="pims-logo">Cornerstone<small>IDEXX</small></div>
+        <div class="pims-logo">ezyVet<small>IDEXX</small></div>
+        <div class="pims-logo">Provet<small>Cloud</small></div>
+        <div class="pims-logo">IntraVet<small>Patterson</small></div>
+        <div class="pims-logo">Pulse<small>VetSource</small></div>
+        <div class="pims-logo">Hippo<small>Manager</small></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Who Vetra serves -->
+  <section class="segments" id="segments">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="mono pine">★ Who Vetra serves</div>
+        <h2>Built for the clinic in front of you — and the group behind it.</h2>
+        <p>Two ways to deploy. One operating system. Pick the path that matches your practice.</p>
+      </div>
+
+      <div class="grid">
+        <div class="seg-card">
+          <span class="badge">★ Independent clinic</span>
+          <h3>For owner‑led practices.</h3>
+          <div class="who">1–3 locations · owner DVM, practice manager</div>
+          <ul>
+            <li>Live in 7 days — no IT team required</li>
+            <li>Mochi answers every call, including evenings and weekends</li>
+            <li>Pip files faxes and IDEXX/Antech labs into your existing PIMS</li>
+            <li>Hazel runs vaccine reminders and chronic refill pre‑fetch</li>
+            <li>Willow handles QoL check‑ins and EOL coordination</li>
+            <li>Revenue recovery dashboard — see ROI in 30 days</li>
+          </ul>
+          <div class="cta-row">
+            <a class="btn" href="#demo">Book a 15‑min demo <span class="arr">→</span></a>
+            <span class="price-hint">From $499/mo</span>
+          </div>
+        </div>
+
+        <div class="seg-card chain">
+          <span class="badge">★ Multi‑location group</span>
+          <h3>For groups, chains, and consolidators.</h3>
+          <div class="who">4–80+ locations · ops director, group CMO, RVT lead</div>
+          <ul>
+            <li>Central console — every site, one screen, role‑based access</li>
+            <li>Cross‑site call routing and overflow between locations</li>
+            <li>Standardized triage protocols, deployed group‑wide</li>
+            <li>PIMS‑agnostic — works across mixed AVImark / ezyVet / Cornerstone estates</li>
+            <li>SOC 2 II, SSO/SAML, audit logs, data residency controls</li>
+            <li>Staged rollout playbook with a dedicated deployment lead</li>
+          </ul>
+          <div class="cta-row">
+            <a class="btn ghost" href="#demo">Talk to ops team <span class="arr">→</span></a>
+            <span class="price-hint">Custom · SOC 2 II</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dark CTA band -->
+  <section class="band-cta">
+    <div class="wrap">
+      <div>
+        <div class="mono" style="color:#b9d8c8">Have a workflow?</div>
+        <h2 style="margin-top: var(--s-3);">We'll build the <em>agent</em> for it.</h2>
+      </div>
+      <div>
+        <p>
+          Vetra starts where the pain is loudest. The same operating layer expands into estimates, refill pre‑fetch, discharge follow‑ups, cross‑site routing, and group‑level reporting — without changing the PIMS you already run on.
+        </p>
+        <div class="actions">
+          <a class="btn light" href="#demo">Request an agent <span class="arr">→</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Compliance -->
+  <div class="compliance">
+    <div class="wrap row">
+      <div class="badges">
+        <div class="badge">SOC<br>2 II</div>
+        <div class="badge">HIPAA<br>aware</div>
+        <div class="badge">ISO<br>27001</div>
+      </div>
+      <div>
+        <h3>Fully compliant by design.</h3>
+        <p>All data encrypted at rest and in transit. Onshore storage. Multi‑factor authentication. SSO/SAML for groups. Audited infrastructure built for veterinary medical workflows.</p>
+      </div>
+      <div class="meta-stat">
+        <div class="num">99.99%</div>
+        <div class="lbl">uptime · last 90 days</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trust / Clinics -->
+  <section id="trust" class="trust-section">
+    <div class="wrap">
+      <div class="head">
+        <div class="mono pine">★ Clinics</div>
+        <h2 style="margin-top: var(--s-3);">Trusted by independents and groups.</h2>
+        <p>400+ clinics — from single‑doctor practices to 40‑location consolidators — run their front desk on Vetra.</p>
+      </div>
+
+      <div class="logo-grid-title">Independent &amp; owner‑led clinics</div>
+      <div class="logo-grid">
+        <div class="logo-cell">Maple St.<small>Veterinary</small></div>
+        <div class="logo-cell">Riverbend<small>Vet Group</small></div>
+        <div class="logo-cell">Oakridge<small>Pet Hospital</small></div>
+        <div class="logo-cell">Cypress<small>Animal Care</small></div>
+        <div class="logo-cell">Westmore<small>Veterinary</small></div>
+        <div class="logo-cell">FirstRing<small>Veterinary</small></div>
+      </div>
+
+      <div class="logo-grid-title">Multi‑location groups &amp; consolidators</div>
+      <div class="logo-grid">
+        <div class="logo-cell">PetCardio<small>12 sites</small></div>
+        <div class="logo-cell">All‑Hours<small>Animal ER Group</small></div>
+        <div class="logo-cell">BrightPaw 24/7<small>8 sites</small></div>
+        <div class="logo-cell">Stonebridge<small>Surgical Network</small></div>
+        <div class="logo-cell">Hollow Oak<small>Vet ER · 6 sites</small></div>
+        <div class="logo-cell">Northside<small>Animal ER · 4 sites</small></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section style="background: var(--cream); padding-top: var(--s-7);">
+    <div class="wrap">
+      <div class="quotes">
+        <figure class="quote">
+          <div class="quote-logo">M</div>
+          <blockquote>"Single‑doctor practice. We were losing 8–10 calls an evening. Vetra recovered $24k in our first month."</blockquote>
+          <figcaption class="attr"><strong>Dr. Sarah Templeton</strong>Owner, Maple St. Veterinary · 1 location</figcaption>
+        </figure>
+        <figure class="quote">
+          <div class="quote-logo">P</div>
+          <blockquote>"We rolled Vetra across 12 sites in 6 weeks. One console, standardized triage, no per‑clinic IT lift."</blockquote>
+          <figcaption class="attr"><strong>Andrea L.</strong>Director of Operations, PetCardio Specialty · 12 locations</figcaption>
+        </figure>
+        <figure class="quote">
+          <div class="quote-logo">R</div>
+          <blockquote>"Willow runs our quality‑of‑life check‑ins. Our staff stopped dreading the EOL calls — and families feel heard."</blockquote>
+          <figcaption class="attr"><strong>Priscilla M.</strong>Practice Manager, Riverbend Vet Group · 3 locations</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mission band -->
+  <section id="mission" class="mission">
+    <div class="wrap grid">
+      <div>
+        <div class="mono pine">★ Our mission</div>
+        <h2 style="margin-top: var(--s-3);">Automate the admin. Prioritise the animals.</h2>
+        <p>
+          Vetra is a Champaign‑based veterinary tech company building purpose‑built AI agents for clinics that answer every call. We solve the operational bottlenecks — phones, faxes, follow‑ups, end‑of‑life — that make veterinary practices costly to run, so your team can spend more time with patients and less with paperwork.
+        </p>
+        <a class="btn ghost" style="margin-top: var(--s-6);" href="#">Read our mission <span class="arr">→</span></a>
+      </div>
+      <div class="pic">
+        <div class="meta">Across the Vetra network · last 30 days</div>
+        <div>
+          <div class="num">124k</div>
+          <div class="cap" style="margin-top: 8px;">workflows completed — calls, labs filed, refills queued, QoL check‑ins — across 400+ clinics and 22 multi‑site groups.</div>
+        </div>
+        <div class="meta">Source · Vetra ops dashboard, 2026</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section id="demo" class="final-cta">
+    <div class="wrap">
+      <div class="card">
+        <div class="mono pine">★ Book a live demo</div>
+        <h2 style="margin-top: var(--s-3);">See Vetra inside your clinic.</h2>
+        <p>15 minutes for independents. 30 minutes for multi‑location groups. Either way, we call your number live, triage a real case, file the result, and show you the operating system behind it.</p>
+        <div class="actions">
+          <a class="btn" href="mailto:richardsmith.vet1@gmail.com?subject=Vetra%20Demo%20Request%20%E2%80%93%20Independent%20Clinic">Independent clinic — 15 min <span class="arr">→</span></a>
+          <a class="btn ghost" href="mailto:richardsmith.vet1@gmail.com?subject=Vetra%20Demo%20Request%20%E2%80%93%20Multi-location%20Group">Multi‑location group — 30 min <span class="arr">→</span></a>
+        </div>
+        <p style="margin-top: var(--s-5); font-size: var(--t-sm); color: var(--sage-soft);">Or call Mochi: <a href="tel:+19262171472" style="color:var(--pine); font-weight:600;">+1 (926) 217‑1472</a></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site">
+    <div class="wrap">
+      <div class="top">
+        <div>
+          <div class="brand">Ve<span>tra</span></div>
+          <p class="blurb">The AI operating system for veterinary clinic operations. Four agents — Mochi, Pip, Hazel, Willow. Built for the clinics that answer every call.</p>
+        </div>
+        <div>
+          <h4>Agents</h4>
+          <ul>
+            <li><a href="#agents"><span class="agent-dot mochi"></span>Mochi · Voice &amp; front desk</a></li>
+            <li><a href="#agents"><span class="agent-dot pip"></span>Pip · Records &amp; PIMS</a></li>
+            <li><a href="#agents"><span class="agent-dot hazel"></span>Hazel · Refills &amp; reminders</a></li>
+            <li><a href="#agents"><span class="agent-dot willow"></span>Willow · Companion &amp; EOL</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Company</h4>
+          <ul>
+            <li><a href="#mission">Mission</a></li>
+            <li><a href="#segments">For independents</a></li>
+            <li><a href="#segments">For multi‑location groups</a></li>
+            <li><a href="#">Pricing</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Connect</h4>
+          <ul>
+            <li><a href="mailto:richardsmith.vet1@gmail.com">richardsmith.vet1@gmail.com</a></li>
+            <li><a href="tel:+19262171472">+1 (926) 217‑1472</a></li>
+            <li><a href="#">LinkedIn</a></li>
+            <li><a href="#">Privacy &amp; Security</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="bottom">
+        <span>© 2026 Vetra. All rights reserved.</span>
+        <span>Built for the clinics that answer every call.</span>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

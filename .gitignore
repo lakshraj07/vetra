@@ -1,0 +1,9 @@
+node_modules/
+.env
+.env.local
+.DS_Store
+*.log
+__MACOSX/
+.claude/serve.ps1
+*.xlsx#
+~$*.xlsx
