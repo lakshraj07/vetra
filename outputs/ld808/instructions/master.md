@@ -83,38 +83,53 @@ The repository contains a new Sites scaffold at `apps/actionchart-voice/`, the i
 
 ## 7. Done when
 
-- [ ] All eight phases are complete.
-- [ ] The prepared dataset contains 25 patients with unique patient and encounter references.
-- [ ] Ali's flow completes from replay to reviewed actions, FHIR drafts, and recap.
-- [ ] Recap leakage and FHIR-boundary tests pass.
-- [ ] Typecheck, lint, tests, and production build pass with zero failures.
-- [ ] A fresh developer can run the app from the README.
+- [x] All eight phases are complete.
+- [x] The prepared dataset contains 25 patients with unique patient and encounter references.
+- [x] Ali's flow completes from call log and triage through reviewed actions, FHIR drafts, and recap.
+- [x] Recap leakage and FHIR-boundary tests pass.
+- [x] Typecheck, lint, tests, and production build pass with zero failures.
+- [x] A fresh developer can run the app from the README.
 - [ ] The deployed version matches the final tested commit.
-- [ ] The completion log contains one entry for every phase.
+- [x] The completion log contains one entry for every phase.
 
 ## 8. Phase completion log
 
 ### Phase 1: Application foundation
-**Status:** Pending
+**Status:** Complete
+**Date:** 2026-07-18
+**Outcome:** Verified the scaffold, normalized commands, copied the immutable source, and added deterministic data preparation.
 
 ### Phase 2: Data, memory, and replay
-**Status:** Pending
+**Status:** Complete
+**Date:** 2026-07-18
+**Outcome:** Prepared 25 typed patient cases, longitudinal memory, SOAP sections, transcripts, and the voice-event contract.
 
 ### Phase 3: Doctor review workflow
-**Status:** Pending
+**Status:** Complete
+**Date:** 2026-07-18
+**Outcome:** Added evidence-linked action extraction, review transitions, audit history, and local persistence.
 
 ### Phase 4: FHIR drafts, recap, and audit
-**Status:** Pending
+**Status:** Complete
+**Date:** 2026-07-18
+**Outcome:** Added draft Task and ServiceRequest mapping plus the approved and patient-visible recap filter.
 
 ### Phase 5: Demo workspace
-**Status:** Pending
+**Status:** Complete
+**Date:** 2026-07-18
+**Outcome:** Built the responsive clinician workspace and added Vetra-style call logging, triage, routing, and assignment.
 
 ### Phase 6: Edge cases and hardening
-**Status:** Pending
+**Status:** Complete
+**Date:** 2026-07-18
+**Outcome:** Added input limits, safe storage fallback, route validation, sensitive defaults, and leakage tests.
 
 ### Phase 7: Cleanup and simplification
-**Status:** Pending
+**Status:** Complete
+**Date:** 2026-07-18
+**Outcome:** Removed starter preview, database examples, and unused dependencies without changing behavior.
 
 ### Phase 8: Documentation and dependency audit
-**Status:** Pending
-
+**Status:** Complete
+**Date:** 2026-07-18
+**Outcome:** Added app-specific README and CLAUDE guidance, audited dependencies, and ran the full suite.

@@ -2,7 +2,7 @@
 
 ## Meta
 - **Profile Version:** 1
-- **Total Observations:** 4
+- **Total Observations:** 5
 - **First Observation:** 2026-07-18
 - **Last Updated:** 2026-07-18
 - **Profile Confidence:** Low
@@ -60,6 +60,7 @@
 - Auto-resolve obvious, reversible workflow choices and reserve questions for decisions that change the product.
 - Build around missing external credentials when a clean adapter can be added later.
 - Shape hackathon work around the actual judging format and make the scoring case visible in the demo.
+- Ground new demos in Vetra's front-door call logging, triage, routing, ownership, and next-step model.
 
 ## Anti-Priorities
 (none observed yet)
@@ -88,3 +89,4 @@
 | 2 | 2026-07-18 | Asked for rapid progression and quick artifact updates | Decision style and communication | Speed preference raised from 6/10 to 8/10 |
 | 3 | 2026-07-18 | Deferred the Vapi API and asked to build the rest of the product | Scope and technical taste | Prefer a working local core with a later integration boundary |
 | 4 | 2026-07-18 | Supplied the two-round judging process and weighted criteria | Product strategy | Treat the three-minute demo and scoring rubric as hard constraints |
+| 5 | 2026-07-18 | Asked to use Vetra's front-desk call logging and triage context | Product strategy | Add Capture, Route, Assign before downstream clinical review |

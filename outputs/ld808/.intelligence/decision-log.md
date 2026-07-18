@@ -1,20 +1,40 @@
 # Decision Log - All Projects
 
 ## Meta
-- **Total Decisions:** 12
+- **Total Decisions:** 13
 - **Projects Covered:** [vetra]
 - **Date Range:** 2026-07-18 to 2026-07-18
 - **Last Updated:** 2026-07-18
-- **Categories:** Technical: 4 | Product: 3 | Design: 1 | Process: 4 | Preference: 0 | Domain: 0 | Meta: 0
+- **Categories:** Technical: 4 | Product: 4 | Design: 1 | Process: 4 | Preference: 0 | Domain: 0 | Meta: 0
 - **CHINTAN Performance:**
   - Auto-answered: 7
   - Suggested-confirmed: 0
   - Suggested-overridden: 0
-  - Human-answered: 5
+  - Human-answered: 6
 
 ---
 
 ## Recent Decisions (last 20)
+
+### Decision #13
+- **Timestamp:** 2026-07-18T13:31:00-07:00
+- **Project:** vetra
+- **Session/Mode:** Session 5
+- **Phase:** Front-door workflow
+- **Part:** -
+- **Message Summary:** Lakshraj asked to use Vetra's front-desk context for logging and triaging the call.
+- **Decision Type:** explicit
+- **Category:** Product
+- **Decision:** Start the demo with a structured Capture, Route, Assign handoff before patient memory and clinician review.
+- **Reasoning:** It connects the hackathon workflow to Vetra's strongest front-door product model and makes urgency, ownership, and next action visible.
+- **Alternatives Considered:** Keep the replay encounter-first; change the synthetic data into veterinary cases.
+- **Decided By:** human
+- **CHINTAN Confidence:** 100%
+- **Reversibility:** easy
+- **Impact Scope:** this-project
+- **Tags:** front-desk, call-log, triage, capture, route, assign
+- **Outcome:** positive
+- **Outcome Notes:** Implemented and covered by the test suite.
 
 ### Decision #12
 - **Timestamp:** 2026-07-18T13:08:00-07:00
@@ -267,6 +287,7 @@
 - Decision #6: Build an isolated ActionChart app with replay mode and a later Vapi adapter.
 
 ### Product Decisions
+- Decision #13: Add Vetra's front-desk call logging and triage context before clinician review.
 - Decision #7: Optimize the build and demo around the supplied judging process.
 - Decision #5: Keep ActionChart in the human-healthcare domain.
 - Decision #4: Defer Vapi and build the complete downstream workflow now.
