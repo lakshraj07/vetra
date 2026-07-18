@@ -7,3 +7,10 @@ __MACOSX/
 .claude/serve.ps1
 *.xlsx#
 ~$*.xlsx
+
+# Zivon Product temporary state
+.transition-state.md
+.archive-manifest.md
+.s7-transition-state.md
+.git-pending-pushes.md
+Thumbs.db
