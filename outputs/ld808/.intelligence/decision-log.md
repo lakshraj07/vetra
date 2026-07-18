@@ -1,13 +1,13 @@
 # Decision Log - All Projects
 
 ## Meta
-- **Total Decisions:** 11
+- **Total Decisions:** 12
 - **Projects Covered:** [vetra]
 - **Date Range:** 2026-07-18 to 2026-07-18
 - **Last Updated:** 2026-07-18
-- **Categories:** Technical: 4 | Product: 3 | Design: 1 | Process: 3 | Preference: 0 | Domain: 0 | Meta: 0
+- **Categories:** Technical: 4 | Product: 3 | Design: 1 | Process: 4 | Preference: 0 | Domain: 0 | Meta: 0
 - **CHINTAN Performance:**
-  - Auto-answered: 6
+  - Auto-answered: 7
   - Suggested-confirmed: 0
   - Suggested-overridden: 0
   - Human-answered: 5
@@ -15,6 +15,26 @@
 ---
 
 ## Recent Decisions (last 20)
+
+### Decision #12
+- **Timestamp:** 2026-07-18T13:08:00-07:00
+- **Project:** vetra
+- **Session/Mode:** Session 4
+- **Phase:** Instruction format
+- **Part:** -
+- **Message Summary:** The build spans multiple modules and risk boundaries, so Session 4 selected the Zivon multi-phase format.
+- **Decision Type:** auto-chintan
+- **Category:** Process
+- **Decision:** Use five delivery phases followed by separate hardening, cleanup, and documentation phases.
+- **Reasoning:** This keeps setup free of feature code, makes each increment verifiable, and prevents safety and documentation work from becoming optional.
+- **Alternatives Considered:** One master checklist; combine all post-coding work into the UI phase.
+- **Decided By:** chintan-auto
+- **CHINTAN Confidence:** 99%
+- **Reversibility:** easy
+- **Impact Scope:** this-session
+- **Tags:** instructions, phases, verification, zivon
+- **Outcome:** positive
+- **Outcome Notes:** Eight build-ready phase files were created.
 
 ### Decision #11
 - **Timestamp:** 2026-07-18T12:42:00-07:00
@@ -255,6 +275,7 @@
 - Decision #11: Center the rehearsed live demo on Ali and keep the full cohort for Q&A.
 
 ### Process Decisions
+- Decision #12: Use a five-phase build followed by hardening, cleanup, and documentation.
 - Decision #3: Use the focused onboarding set and defer unrelated documentation.
 - Decision #2: Onboard the Vetra root and auto-resolve reversible workflow choices.
 - Decision #1: Continue into mandatory Session 0 onboarding.

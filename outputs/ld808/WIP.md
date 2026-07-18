@@ -1,11 +1,11 @@
-# WIP: Session 4 - Build instructions
-## Status: In Progress
-## Started: 2026-07-18 12:42
+# WIP: Session 5 - Implementation and validation
+## Status: In Progress - Phase 1
+## Started: 2026-07-18 13:08
 ## Contributor: ld808 - Lakshraj Doshi
 ## Messages This Session: 0
 
 ## Current Focus
-Translate the architecture and five delivery phases into unambiguous coding instructions with file targets, dependencies, tests, and completion checks.
+Build the complete replay, memory, doctor review, FHIR draft, and patient recap experience under `apps/actionchart-voice/`.
 
 ## CHINTAN Activity
 - Auto-answered: 0 questions
@@ -14,21 +14,22 @@ Translate the architecture and five delivery phases into unambiguous coding inst
 - Current session confidence: 97%
 
 ## Open Decisions
-- None that change product scope. Instruction packaging follows the multi-phase Zivon template.
+- None. Live Vapi configuration remains deferred until credentials arrive.
 
 ## Resolved Decisions
-- Five implementation phases are required because the build spans data, state, interoperability, safety, and UI risks.
-- Automated checks cover parser behavior, review transitions, recap leakage, FHIR fields, and the production build.
-- Deployment uses the exact tested commit.
+- Use the eight-phase instruction set in `outputs/ld808/instructions/`.
+- Keep copied source data immutable and generate the compact runtime dataset.
+- Validate every clinical-output and patient-visibility boundary in code.
 
 ## Key Outputs
-- `03-build-plan.md`: architecture, modules, five phases, tests, risks, traceability, and definition of done.
-- `03-decisions-log.md`: final build-planning decisions and deferred production work.
+- `instructions/master.md`: implementation contract and completion log.
+- `instructions/phase-1-setup.md` through `phase-8-documentation.md`: ordered build and post-coding work.
+- `instructions/05-execution-trace.md`: actual execution record.
 
 ## Blockers
 None.
 
 ## Next Steps
-1. Read the Zivon instruction-format template.
-2. Write master, phase, edge-case, cleanup, and documentation instructions.
-3. Validate the instruction set, then begin implementation.
+1. Verify and normalize the scaffold.
+2. Prepare the 25-patient dataset.
+3. Implement review, FHIR, recap, UI, and validation in order.
