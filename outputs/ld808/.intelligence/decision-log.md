@@ -1,13 +1,13 @@
 # Decision Log - All Projects
 
 ## Meta
-- **Total Decisions:** 7
+- **Total Decisions:** 9
 - **Projects Covered:** [vetra]
 - **Date Range:** 2026-07-18 to 2026-07-18
 - **Last Updated:** 2026-07-18
-- **Categories:** Technical: 1 | Product: 3 | Design: 0 | Process: 3 | Preference: 0 | Domain: 0 | Meta: 0
+- **Categories:** Technical: 3 | Product: 3 | Design: 0 | Process: 3 | Preference: 0 | Domain: 0 | Meta: 0
 - **CHINTAN Performance:**
-  - Auto-answered: 2
+  - Auto-answered: 4
   - Suggested-confirmed: 0
   - Suggested-overridden: 0
   - Human-answered: 5
@@ -15,6 +15,46 @@
 ---
 
 ## Recent Decisions (last 20)
+
+### Decision #9
+- **Timestamp:** 2026-07-18T12:24:00-07:00
+- **Project:** vetra
+- **Session/Mode:** Session 2
+- **Phase:** Output safety
+- **Part:** B
+- **Message Summary:** Research resolved how approved information may reach a patient-facing recap.
+- **Decision Type:** auto-chintan
+- **Category:** Technical
+- **Decision:** Generate the recap only from actions that are approved and patient-visible, using a deterministic filter enforced at render time.
+- **Reasoning:** The safety rule remains visible, testable, and independent of model prompting.
+- **Alternatives Considered:** Prompt-only filtering; manual recap editing.
+- **Decided By:** chintan-auto
+- **CHINTAN Confidence:** 99%
+- **Reversibility:** easy
+- **Impact Scope:** this-project
+- **Tags:** safety, recap, approval, visibility
+- **Outcome:** pending
+- **Outcome Notes:** Added to the research findings and test requirements.
+
+### Decision #8
+- **Timestamp:** 2026-07-18T12:21:00-07:00
+- **Project:** vetra
+- **Session/Mode:** Session 2
+- **Phase:** Interoperability boundary
+- **Part:** A
+- **Message Summary:** Official FHIR R4 definitions were used to separate clinical requests from operational work.
+- **Decision Type:** auto-chintan
+- **Category:** Technical
+- **Decision:** Emit draft ServiceRequest resources for clinical services and draft Task resources for operational follow-up.
+- **Reasoning:** ServiceRequest describes requested services, while Task represents and tracks an activity.
+- **Alternatives Considered:** Use Task for every action; use ServiceRequest for every action.
+- **Decided By:** chintan-auto
+- **CHINTAN Confidence:** 99%
+- **Reversibility:** moderate
+- **Impact Scope:** this-project
+- **Tags:** fhir, task, service-request, interoperability
+- **Outcome:** pending
+- **Outcome Notes:** Implementation must preserve patient and encounter references.
 
 ### Decision #7
 - **Timestamp:** 2026-07-18T12:00:00-07:00
@@ -161,6 +201,8 @@
 ## Full Log by Category
 
 ### Technical Decisions
+- Decision #9: Build the patient recap through a deterministic approval and visibility filter.
+- Decision #8: Use ServiceRequest for clinical-service requests and Task for operational work.
 - Decision #6: Build an isolated ActionChart app with replay mode and a later Vapi adapter.
 
 ### Product Decisions
