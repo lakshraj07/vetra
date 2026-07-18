@@ -25,3 +25,5 @@ Each phase must add one `[COMPLEXITY]` entry that records whether the phase was 
 - Phase 8 `[COMPLEXITY]`: Equal to plan. README and app-local context now match the tested build.
 
 Verification: typecheck, lint, 12 tests, production build, local HTTP 200, and voice-route HTTP 501 configuration boundary all passed.
+
+Deployment: private Sites version 1 succeeded at `https://actionchart-voice-demo.laksh07.chatgpt.site` from tested commit `41179eaac1eba2ddbffc762d8e034a693d33a208`.

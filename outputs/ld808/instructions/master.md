@@ -89,7 +89,7 @@ The repository contains a new Sites scaffold at `apps/actionchart-voice/`, the i
 - [x] Recap leakage and FHIR-boundary tests pass.
 - [x] Typecheck, lint, tests, and production build pass with zero failures.
 - [x] A fresh developer can run the app from the README.
-- [ ] The deployed version matches the final tested commit.
+- [x] The deployed version matches the final tested commit.
 - [x] The completion log contains one entry for every phase.
 
 ## 8. Phase completion log

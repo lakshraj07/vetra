@@ -1,20 +1,15 @@
-# WIP: Session 5 - Deployment
-## Status: In Progress - Final publish
-## Started: 2026-07-18 13:48
+# Session 5 complete
+## Completed: 2026-07-18 13:55
 ## Contributor: ld808 - Lakshraj Doshi
 
-## Current focus
-Publish the exact tested ActionChart source privately and verify the live deployment.
+ActionChart is built, validated, and privately deployed at `https://actionchart-voice-demo.laksh07.chatgpt.site`.
 
-## Completed build
+## Delivered
 - Vetra-style Capture, Route, Assign call log and triage handoff.
 - 25 synthetic returning-patient memory records.
 - Encounter replay and future Vapi event boundary.
 - SOAP, evidence, clinician review, draft FHIR outputs, audit, and safe recap.
-- Typecheck, lint, 12 tests, production build, and local HTTP validation.
+- Typecheck, lint, 12 tests, production build, local HTTP validation, and private deployment.
 
-## Blockers
-None. Live Vapi credentials remain deferred by design.
-
-## Next step
-Save and deploy the tested Sites version, then record the live URL.
+## Deferred by design
+Live Vapi and Deepgram Nova-3 mapping waits for the user's API details. The downstream contract is ready.
