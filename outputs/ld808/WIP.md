@@ -1,38 +1,34 @@
-# WIP: Session 3 - Build planning
-## Status: In Progress - Part A
-## Started: 2026-07-18 12:24
+# WIP: Session 4 - Build instructions
+## Status: In Progress
+## Started: 2026-07-18 12:42
 ## Contributor: ld808 - Lakshraj Doshi
 ## Messages This Session: 0
 
 ## Current Focus
-Convert the verified product and FHIR decisions into a phased build that reaches a reliable three-minute demo quickly.
+Translate the architecture and five delivery phases into unambiguous coding instructions with file targets, dependencies, tests, and completion checks.
 
 ## CHINTAN Activity
 - Auto-answered: 0 questions
 - Suggested: 0 questions
 - Asked human: 0 questions
-- Current session confidence: 96%
+- Current session confidence: 97%
 
 ## Open Decisions
-- Exact phase boundaries for data preparation, review workflow, outputs, and demo polish.
-- Minimum automated test set needed before deployment.
+- None that change product scope. Instruction packaging follows the multi-phase Zivon template.
 
 ## Resolved Decisions
-- Ali is the primary demo case.
-- The first viewport centers one patient and one review decision.
-- ServiceRequest represents clinical-service requests; Task represents operational work.
-- Draft outputs use `status: draft` and `intent: proposal`.
-- The patient recap is derived through a deterministic approval and visibility filter.
-- Replay and future Vapi events share a provider-neutral contract.
+- Five implementation phases are required because the build spans data, state, interoperability, safety, and UI risks.
+- Automated checks cover parser behavior, review transitions, recap leakage, FHIR fields, and the production build.
+- Deployment uses the exact tested commit.
 
 ## Key Outputs
-- `02-research.md`: product, FHIR, adapter, safety, dataset, and judging findings.
-- `02-decisions-log.md`: final research decisions and confidence.
+- `03-build-plan.md`: architecture, modules, five phases, tests, risks, traceability, and definition of done.
+- `03-decisions-log.md`: final build-planning decisions and deferred production work.
 
 ## Blockers
-None. Live Vapi remains a deferred adapter.
+None.
 
 ## Next Steps
-1. Define modules, phases, acceptance checks, and risks.
-2. Map every research recommendation to implementation work.
-3. Produce `03-build-plan.md` and implementation instructions.
+1. Read the Zivon instruction-format template.
+2. Write master, phase, edge-case, cleanup, and documentation instructions.
+3. Validate the instruction set, then begin implementation.

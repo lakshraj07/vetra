@@ -1,13 +1,13 @@
 # Decision Log - All Projects
 
 ## Meta
-- **Total Decisions:** 9
+- **Total Decisions:** 11
 - **Projects Covered:** [vetra]
 - **Date Range:** 2026-07-18 to 2026-07-18
 - **Last Updated:** 2026-07-18
-- **Categories:** Technical: 3 | Product: 3 | Design: 0 | Process: 3 | Preference: 0 | Domain: 0 | Meta: 0
+- **Categories:** Technical: 4 | Product: 3 | Design: 1 | Process: 3 | Preference: 0 | Domain: 0 | Meta: 0
 - **CHINTAN Performance:**
-  - Auto-answered: 4
+  - Auto-answered: 6
   - Suggested-confirmed: 0
   - Suggested-overridden: 0
   - Human-answered: 5
@@ -15,6 +15,46 @@
 ---
 
 ## Recent Decisions (last 20)
+
+### Decision #11
+- **Timestamp:** 2026-07-18T12:42:00-07:00
+- **Project:** vetra
+- **Session/Mode:** Session 3
+- **Phase:** Demo architecture
+- **Part:** B
+- **Message Summary:** The implementation plan resolved how much product breadth appears in the live flow.
+- **Decision Type:** auto-chintan
+- **Category:** Design
+- **Decision:** Rehearse one Ali path in the primary flow and keep the other 24 patients available for credibility and Q&A.
+- **Reasoning:** This fits the three-minute window while retaining the breadth of the supplied dataset.
+- **Alternatives Considered:** Tour several cases; hide the cohort and ship only one case.
+- **Decided By:** chintan-auto
+- **CHINTAN Confidence:** 99%
+- **Reversibility:** easy
+- **Impact Scope:** this-project
+- **Tags:** demo, interaction, cohort, judging
+- **Outcome:** pending
+- **Outcome Notes:** Phase 5 includes rehearsal and deterministic reset.
+
+### Decision #10
+- **Timestamp:** 2026-07-18T12:37:00-07:00
+- **Project:** vetra
+- **Session/Mode:** Session 3
+- **Phase:** Extraction architecture
+- **Part:** A
+- **Message Summary:** The build plan resolved whether the demo needs a live model dependency for action extraction.
+- **Decision Type:** auto-chintan
+- **Category:** Technical
+- **Decision:** Use a deterministic SOAP and evidence parser for the synthetic demo, with clinician review as the authority boundary.
+- **Reasoning:** The supplied notes have reliable structure, and the approach keeps the live demo reproducible while preserving an upgrade path.
+- **Alternatives Considered:** Live model extraction; manually author every action.
+- **Decided By:** chintan-auto
+- **CHINTAN Confidence:** 97%
+- **Reversibility:** easy
+- **Impact Scope:** this-project
+- **Tags:** parser, extraction, reliability, review
+- **Outcome:** pending
+- **Outcome Notes:** Tests will cover ordinary and sensitive plan items.
 
 ### Decision #9
 - **Timestamp:** 2026-07-18T12:24:00-07:00
@@ -201,6 +241,7 @@
 ## Full Log by Category
 
 ### Technical Decisions
+- Decision #10: Use deterministic SOAP and evidence extraction for the synthetic demo.
 - Decision #9: Build the patient recap through a deterministic approval and visibility filter.
 - Decision #8: Use ServiceRequest for clinical-service requests and Task for operational work.
 - Decision #6: Build an isolated ActionChart app with replay mode and a later Vapi adapter.
@@ -211,7 +252,7 @@
 - Decision #4: Defer Vapi and build the complete downstream workflow now.
 
 ### Design Decisions
-(no entries yet)
+- Decision #11: Center the rehearsed live demo on Ali and keep the full cohort for Q&A.
 
 ### Process Decisions
 - Decision #3: Use the focused onboarding set and defer unrelated documentation.
