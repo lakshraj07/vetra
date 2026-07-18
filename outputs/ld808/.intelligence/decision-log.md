@@ -1,20 +1,40 @@
 # Decision Log - All Projects
 
 ## Meta
-- **Total Decisions:** 6
+- **Total Decisions:** 7
 - **Projects Covered:** [vetra]
 - **Date Range:** 2026-07-18 to 2026-07-18
 - **Last Updated:** 2026-07-18
-- **Categories:** Technical: 1 | Product: 2 | Design: 0 | Process: 3 | Preference: 0 | Domain: 0 | Meta: 0
+- **Categories:** Technical: 1 | Product: 3 | Design: 0 | Process: 3 | Preference: 0 | Domain: 0 | Meta: 0
 - **CHINTAN Performance:**
   - Auto-answered: 2
   - Suggested-confirmed: 0
   - Suggested-overridden: 0
-  - Human-answered: 4
+  - Human-answered: 5
 
 ---
 
 ## Recent Decisions (last 20)
+
+### Decision #7
+- **Timestamp:** 2026-07-18T12:00:00-07:00
+- **Project:** vetra
+- **Session/Mode:** Session 1
+- **Phase:** Success criteria
+- **Part:** A
+- **Message Summary:** Lakshraj supplied the two-round judging process, three-minute demo window, and scoring criteria.
+- **Decision Type:** explicit
+- **Category:** Product
+- **Decision:** Optimize the build and demo for a complete three-minute flow, while making impact, technical depth, and originality visible on screen.
+- **Reasoning:** Execution has the largest supplied Round One weight, and a focused working build is explicitly favored over a broken ambitious one.
+- **Alternatives Considered:** Maximize feature count; rely on narration to explain incomplete technical work.
+- **Decided By:** human
+- **CHINTAN Confidence:** 100%
+- **Reversibility:** moderate
+- **Impact Scope:** this-project
+- **Tags:** judging, demo, execution, originality, technical-complexity
+- **Outcome:** pending
+- **Outcome Notes:** Added to project success criteria, research scope, and build priorities.
 
 ### Decision #6
 - **Timestamp:** 2026-07-18T11:52:00-07:00
@@ -144,6 +164,7 @@
 - Decision #6: Build an isolated ActionChart app with replay mode and a later Vapi adapter.
 
 ### Product Decisions
+- Decision #7: Optimize the build and demo around the supplied judging process.
 - Decision #5: Keep ActionChart in the human-healthcare domain.
 - Decision #4: Defer Vapi and build the complete downstream workflow now.
 
