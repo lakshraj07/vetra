@@ -1,0 +1,813 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vetra — translational engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="assets/3dmol.js"></script>
+<style>
+:root{
+ --paper:#15120d;--paper-2:#1c1812;--card:rgba(255,245,225,.035);--card-b:rgba(255,245,225,.09);--card-b2:rgba(255,245,225,.16);
+ --ink:#efe8d9;--ink-2:#c9c0ad;--muted:#8f8572;--line:rgba(255,245,225,.09);--line-2:rgba(255,245,225,.18);
+ --human:#6fb0e0;--dog:#e0a05a;--fap:#4fcaa6;--fap-l:rgba(79,202,166,.14);--kill:#ee7d62;--indet:#e3b24a;
+ --display:"Newsreader",Georgia,serif;--body:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+ color-scheme:dark}
+:root[data-theme="light"]{
+ --paper:#f4efe4;--paper-2:#faf7f0;--card:rgba(255,255,255,.55);--card-b:rgba(36,31,25,.10);--card-b2:rgba(36,31,25,.18);
+ --ink:#241f19;--ink-2:#4a4338;--muted:#7a7062;--line:rgba(36,31,25,.10);--line-2:rgba(36,31,25,.20);
+ --human:#2b6a9a;--dog:#b06d26;--fap:#17775f;--fap-l:rgba(23,119,95,.10);--kill:#a43a22;--indet:#9a6f0c;
+ color-scheme:light}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;color:var(--ink);font:14px/1.5 var(--body);-webkit-font-smoothing:antialiased;overflow:hidden;
+ background:
+  radial-gradient(1200px 700px at 12% -10%, rgba(79,202,166,.10), transparent 60%),
+  radial-gradient(900px 600px at 95% 110%, rgba(224,160,90,.09), transparent 60%),
+  linear-gradient(180deg,#17140e 0%,#15120d 50%,#13100b 100%)}
+:root[data-theme="light"] body{background:
+  radial-gradient(1200px 700px at 12% -10%, rgba(23,119,95,.10), transparent 60%),
+  radial-gradient(900px 600px at 95% 110%, rgba(176,109,38,.10), transparent 60%),
+  linear-gradient(180deg,#f7f3ea 0%,#f3eee3 50%,#efe9db 100%)}
+:root[data-theme="light"] body::before{opacity:.035}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.05;z-index:0;
+ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+h1,h2,h3{margin:0;font-weight:500;letter-spacing:-.012em}
+h1{font-family:var(--display);font-size:30px;line-height:1.08;text-wrap:balance}
+h2{font-family:var(--display);font-size:19px;line-height:1.15}
+p{margin:0}
+a{color:var(--fap)}
+button{font:inherit;cursor:pointer;color:inherit}
+.k{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--mono)}
+.h{color:var(--human)}.d{color:var(--dog)}.f{color:var(--fap)}.kl{color:var(--kill)}.am{color:var(--indet)}
+.btn{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;background:transparent;border:1px solid var(--line-2);
+ color:var(--ink-2);padding:7px 12px;border-radius:5px;transition:.15s;white-space:nowrap;line-height:1.3}
+.btn:hover{border-color:var(--fap);color:var(--fap)}
+.btn.on,.btn.primary{background:var(--fap);color:#0f1d18;border-color:var(--fap);font-weight:500}
+.btn.primary:hover{filter:brightness(1.07);color:#0f1d18}
+.btn.ghost{border-color:transparent;color:var(--muted)}
+.btn.ghost:hover{color:var(--fap)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.sm{padding:4px 9px;font-size:10px}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:6px;overflow:hidden}
+.seg .btn{border:0;border-radius:0;border-right:1px solid var(--line)}
+.seg .btn:last-child{border-right:0}
+.pill{font-family:var(--mono);font-size:10.5px;padding:3px 10px;border-radius:99px;border:1px solid var(--line-2);color:var(--muted);white-space:nowrap}
+.pill.f{border-color:var(--fap);color:var(--fap)} .pill.d{border-color:var(--dog);color:var(--dog)} .pill.a{border-color:var(--indet);color:var(--indet);border-style:dashed} .pill.k{border-color:var(--kill);color:var(--kill)}
+.hide{display:none!important}
+@keyframes vc-in{from{opacity:0;transform:translateX(-6px)}}
+@keyframes vc-draw{to{stroke-dashoffset:0}}
+@keyframes blink{50%{opacity:.25}}
+@keyframes fadeup{from{opacity:0;transform:translateY(6px)}}
+
+/* ---- shell ---- */
+.app{position:relative;z-index:1;height:100%;display:grid;grid-template-rows:56px 1fr;grid-template-columns:232px minmax(0,1fr);grid-template-areas:"top top" "side main"}
+.top{grid-area:top;display:flex;align-items:center;gap:16px;padding:0 20px;border-bottom:1px solid var(--line);backdrop-filter:blur(8px);background:rgba(21,18,13,.6)}
+:root[data-theme="light"] .top{background:rgba(247,243,234,.7)}
+:root[data-theme="light"] .drawer{background:rgba(247,243,234,.94)}
+:root[data-theme="light"] .btn.on,:root[data-theme="light"] .btn.primary,:root[data-theme="light"] .rung.lit i{color:#fff}
+:root[data-theme="light"] .viewer{background:#e9e3d6}
+:root[data-theme="light"] .tabs .btn.on{color:var(--fap)}
+:root[data-theme="light"] .umstage,:root[data-theme="light"] .icin input,:root[data-theme="light"] .proto .ln[contenteditable="true"]:focus{background:rgba(255,255,255,.6)}
+:root[data-theme="light"] .toast{background:#241f19;color:#f4efe4}
+.brand{font-family:var(--display);font-size:22px;letter-spacing:-.01em;display:flex;align-items:baseline;gap:10px}
+.brand small{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.spacer{flex:1}
+.ticker{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11px;color:var(--muted);max-width:46vw;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.ticker i{width:7px;height:7px;border-radius:50%;background:var(--line-2);flex:0 0 7px}
+.ticker.run i{background:var(--indet);animation:blink 1s infinite}
+.ticker.done i{background:var(--fap)}
+.ticker b{color:var(--ink-2);font-weight:500}
+.side{grid-area:side;border-right:1px solid var(--line);padding:18px 12px;display:flex;flex-direction:column;gap:2px}
+.side .k{padding:0 12px 10px}
+.nav{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:7px;font-size:13.5px;color:var(--ink-2);border:0;background:transparent;text-align:left;width:100%;position:relative}
+.nav:hover{background:var(--card);color:var(--ink)}
+.nav.on{background:var(--fap-l);color:var(--fap);font-weight:500}
+.nav .num{font-family:var(--mono);font-size:10px;color:var(--muted);width:12px}
+.nav .dot{margin-left:auto;width:8px;height:8px;border-radius:50%;border:1.5px solid var(--line-2);flex:0 0 8px}
+.nav .dot.run{border-color:var(--indet);background:var(--indet);animation:blink 1s infinite}
+.nav .dot.done{border-color:var(--fap);background:var(--fap)}
+.nav .dot.wait{border-color:var(--indet);border-style:dashed}
+.nav+.nav::before{content:"";position:absolute;left:17px;top:-10px;height:10px;border-left:1px solid var(--line)}
+.side .gates{margin-top:auto;padding:14px 12px;border-top:1px solid var(--line)}
+.gate{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;color:var(--ink-2);padding:5px 0}
+.gate .s{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.gate.p .s{color:var(--fap)} .gate.w .s{color:var(--indet)}
+main{grid-area:main;overflow:auto;min-width:0;scroll-behavior:smooth}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 32px 80px}
+.screen{display:none;animation:fadeup .25s both}
+.screen.on{display:block}
+.shead{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:22px;flex-wrap:wrap}
+.shead .sub{color:var(--ink-2);max-width:60ch;margin-top:8px;font-size:14.5px}
+.shead .k{margin-bottom:8px}
+.shead .right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.agents{display:flex;gap:6px;flex-wrap:wrap}
+.ag{font-family:var(--mono);font-size:10.5px;padding:4px 10px;border-radius:99px;border:1px solid var(--line-2);color:var(--muted);display:flex;gap:7px;align-items:center}
+.ag i{width:6px;height:6px;border-radius:50%;background:var(--line-2)}
+.ag.run{border-color:var(--indet);color:var(--indet)} .ag.run i{background:var(--indet);animation:blink 1s infinite}
+.ag.done{border-color:var(--fap);color:var(--fap)} .ag.done i{background:var(--fap)}
+.ag.wait{border-color:var(--indet);border-style:dashed;color:var(--indet)} .ag.wait i{background:var(--indet)}
+/* cards */
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.hero{grid-template-columns:minmax(0,7fr) minmax(0,5fr);align-items:start}
+#evBody .hero,#hypBody .hero{grid-template-columns:1fr 1fr}
+.chart svg{max-width:720px;margin:0 auto}
+.hero.r{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.card{background:var(--card);border:1px solid var(--card-b);border-radius:10px;padding:18px 20px;min-width:0;position:relative;backdrop-filter:blur(2px)}
+.card.flat{background:transparent;backdrop-filter:none}
+.card>.k{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px}
+.card>.k .src,.card>.k a{font-family:var(--mono);font-size:10px;letter-spacing:.02em;text-transform:none;color:var(--muted);text-decoration:none}
+.card>.k a:hover{color:var(--fap)}
+.stat .n{font-family:var(--display);font-size:40px;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--ink)}
+.stat .l{font-size:12.5px;color:var(--ink-2);margin-top:8px;line-height:1.4}
+.stat .l b{color:var(--ink);font-weight:500}
+.stat.sm{padding:14px 16px}.stat.sm .n{font-size:28px}.stat.sm .l{font-size:11.5px;margin-top:5px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.list{display:flex;flex-direction:column}
+.li{padding:10px 0;border-bottom:1px solid var(--line);font-size:13px;color:var(--ink-2);display:flex;justify-content:space-between;gap:12px;align-items:center}
+.li:last-child{border-bottom:0;padding-bottom:0}
+.li .m{font-family:var(--mono);font-size:10.5px;color:var(--muted);white-space:nowrap}
+.note{font-family:var(--mono);font-size:10.5px;color:var(--muted);line-height:1.6}
+.chart{padding:6px 0 0}
+.empty{border:1px dashed var(--line-2);border-radius:10px;padding:56px 24px;text-align:center;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:12px}
+.empty h2{color:var(--ink-2)}
+.empty p{max-width:50ch}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tabs .btn{padding:4px 9px;font-size:10px;border-color:transparent;color:var(--muted)}
+.tabs .btn.on{background:transparent;color:var(--fap);border-color:var(--fap)}
+/* hypothesis */
+.hypbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:20px;padding:10px 10px 10px 18px;border:1px solid var(--card-b);border-radius:10px;background:var(--card)}
+.hypbar input{flex:1;min-width:200px;padding:9px 0;background:transparent;border:0;color:var(--ink);font:17px var(--display)}
+.hypbar input:focus{outline:none}
+.hypbar .st{font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+.target{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;margin-bottom:8px;cursor:pointer;transition:.15s}
+.target:hover{border-color:var(--line-2)}
+.target.on{border-color:var(--fap);background:var(--fap-l)}
+.target .n{font-size:14px;font-weight:500;color:var(--ink)}
+.target .w{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.45}
+.target .sc{font-family:var(--display);font-size:26px;color:var(--ink-2);flex:0 0 auto;text-align:right;line-height:1}
+.target.on .sc{color:var(--fap)}
+.target .sc small{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.hypline{display:flex;align-items:center;gap:16px;padding:16px 20px;border:1px solid var(--fap);border-radius:10px;background:var(--fap-l);margin-top:16px}
+.hypline .tx{flex:1;font-family:var(--display);font-size:17px;line-height:1.45;color:var(--ink);min-height:22px}
+.hypline .tx b{color:var(--fap);font-weight:500;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;margin-right:10px;vertical-align:middle}
+.cur{display:inline-block;width:7px;height:16px;background:var(--fap);vertical-align:-3px;animation:blink .9s infinite;margin-left:2px}
+/* umap (shared with umapmod.js) */
+.umwrap{padding:0}
+.umhead{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.umhead .btn{padding:4px 9px;font-size:10px}
+.umpanels{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.umpanel{position:relative}
+.umcap{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;font-weight:400}
+.umstage{position:relative;aspect-ratio:7/5;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:6px;overflow:hidden;cursor:grab}
+.umstage:active{cursor:grabbing}
+.umstage canvas{position:absolute;inset:0;width:100%;height:100%}
+.umleg{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:10px;font-size:11.5px;color:var(--ink-2)}
+.umleg span{display:flex;align-items:center;gap:6px;cursor:pointer;opacity:.95;user-select:none}
+.umleg span.off{opacity:.3}
+.umleg i{width:9px;height:9px;border-radius:50%;display:block}
+/* structure */
+.viewer{width:100%;aspect-ratio:1/1;min-height:240px;border-radius:8px;background:#0b0906;border:1px solid var(--line);position:relative;overflow:hidden}
+.viewer.wide{aspect-ratio:16/9}
+.vcap{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between}
+.reschips{display:flex;flex-wrap:wrap;gap:6px}
+.res{font-family:var(--mono);font-size:11px;padding:5px 9px;border:1px solid var(--line);border-radius:5px;color:var(--ink-2)}
+.res.cat{border-color:var(--fap);color:var(--fap)}
+/* wet lab */
+.proto{font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--ink-2);display:flex;flex-direction:column;gap:6px}
+.proto .pl{display:grid;grid-template-columns:26px 86px 1fr;gap:8px;align-items:baseline}
+.proto .n{color:var(--muted)} .proto .key{color:var(--muted)}
+.proto .ln{outline:none;border-radius:3px;padding:0 4px;margin:0 -4px}
+.proto .ln[contenteditable="true"]{outline:1px dashed var(--line-2)}
+.proto .ln[contenteditable="true"]:focus{outline-color:var(--fap);background:rgba(0,0,0,.25)}
+.icin{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px}
+.icin input{width:130px;padding:8px 10px;background:rgba(0,0,0,.25);border:1px solid var(--line-2);border-radius:5px;color:var(--ink);font:14px var(--mono)}
+.icin input:focus{outline:none;border-color:var(--fap)}
+.verdict{font-family:var(--mono);font-size:11px;padding:5px 10px;border-radius:5px;border:1px solid var(--line-2);color:var(--muted)}
+.verdict.pass{border-color:var(--fap);color:var(--fap)} .verdict.fail{border-color:var(--kill);color:var(--kill)}
+/* trials */
+.rung{display:flex;align-items:center;gap:14px;padding:11px 14px;border-radius:8px;margin-bottom:6px;border:1px solid var(--line);transition:.4s;opacity:.3}
+.rung.lit{opacity:1;border-color:var(--fap);background:var(--fap-l)}
+.rung.amb{opacity:1;border-color:var(--indet);border-style:dashed}
+.rung.x{opacity:1;border-color:var(--kill)}
+.rung b{font-size:13px;font-weight:500;display:block;color:var(--ink)}
+.rung span{font-size:11.5px;color:var(--muted)}
+.rung i{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-style:normal;font-weight:600;border:1.5px solid var(--line-2);flex:0 0 28px;font-family:var(--mono);color:var(--muted)}
+.rung.lit i{background:var(--fap);border-color:var(--fap);color:#0f1d18}
+.rung.amb i{border-color:var(--indet);color:var(--indet)}
+.rung.x i{border-color:var(--kill);color:var(--kill)}
+.rung .r{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--muted);white-space:nowrap}
+/* programs */
+.prow{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr) minmax(0,2fr) minmax(0,1fr);gap:10px;align-items:center;padding:14px 16px;border:1px solid var(--line);border-radius:8px;margin-bottom:8px;cursor:pointer}
+.prow:hover{border-color:var(--line-2)}
+.prow.on{border-color:var(--fap)}
+.prow.new{border-style:dashed;color:var(--muted)}
+.prow .gs{display:flex;gap:5px}
+.prow .gs b{width:14px;height:14px;border-radius:3px;border:1px solid var(--line-2);display:block}
+.prow .gs b.p{background:var(--fap);border-color:var(--fap)} .prow .gs b.w{border:1px dashed var(--indet)}
+.phd{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr) minmax(0,2fr) minmax(0,1fr);gap:10px;padding:0 16px 8px}
+/* flow widget (flow.js) */
+.fw{padding:4px 0 0}
+.fw-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.fw-bar .btn{padding:4px 9px;font-size:10px}
+.fw-canvas{position:relative}
+.fw-wires{position:absolute;inset:0;pointer-events:none;overflow:visible}
+.fw-wire{fill:none;stroke:var(--line-2);stroke-width:1.4}
+.fw-ah{fill:var(--line-2)}
+.fw-stages{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:30px}
+.fw-card{background:var(--paper-2);border:1px solid var(--line-2);border-radius:8px;padding:13px 15px;transition:.22s;cursor:pointer}
+.fw-card.on{border-color:var(--fap);box-shadow:inset 0 0 0 1px var(--fap)}
+.fw-hd{display:flex;gap:7px;align-items:baseline;margin-bottom:7px}
+.fw-n{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.fw-t{font-size:15px;font-weight:600;color:var(--ink)}
+.fw-card.on .fw-t{color:var(--fap)}
+.fw-l{font-size:12.5px;color:var(--ink-2);line-height:1.45}
+.fw-gate{margin-top:9px;padding-top:8px;border-top:1px solid var(--line);font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+.fw-gt{color:var(--dog)}
+.fw-fb{text-align:center;margin-top:46px}
+.fw-fbl{font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+.fw-outs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:30px;margin-top:40px}
+.fw-out{background:var(--paper-2);border:1px solid var(--line);border-radius:8px;padding:12px 15px;text-align:center}
+.fw-ot{font-size:14px;font-weight:600;color:var(--ink)}
+.fw-os{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:3px}
+[data-path].fw-editing{outline:1px dashed var(--line-2);outline-offset:2px;border-radius:2px}
+[data-path].fw-editing:focus{outline:1px solid var(--fap)}
+/* drawer */
+.drawer{position:fixed;top:56px;right:0;bottom:0;width:380px;z-index:40;background:rgba(21,18,13,.92);backdrop-filter:blur(12px);border-left:1px solid var(--line);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s}
+.drawer.open{transform:none}
+.drawer .hd{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+.drawer .hd .k{flex:1}
+.stream{flex:1;overflow:auto;padding:12px 16px 20px;display:flex;flex-direction:column;gap:8px;font-family:var(--mono);font-size:11px;line-height:1.5}
+.ev{display:grid;grid-template-columns:38px 1fr;gap:8px;color:var(--ink-2);animation:fadeup .3s both}
+.ev .t{color:var(--muted);font-size:10px;padding-top:1px}
+.ev .who{color:var(--fap);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+.ev.gate .who{color:var(--indet)} .ev.fail .who{color:var(--kill)} .ev.sys .who{color:var(--muted)}
+.ev.pass .m{color:var(--ink)}
+.drawer .ft{padding:10px 16px;border-top:1px solid var(--line);display:flex;gap:12px;align-items:center;font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+.drawer .ft label{display:flex;gap:6px;align-items:center;cursor:pointer}
+select{background:var(--paper);color:var(--ink);border:1px solid var(--line-2);font:inherit;padding:2px 4px;border-radius:4px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:11px;padding:8px 14px;border-radius:5px;opacity:0;transition:.25s;z-index:99;pointer-events:none}
+.toast.on{opacity:1;transform:translateX(-50%)}
+@media(max-width:1000px){.hero,.hero.r,.g3{grid-template-columns:1fr}.fw-stages{grid-template-columns:repeat(2,1fr)}.fw-outs{grid-template-columns:1fr}.fw-wires{display:none}}
+@media(max-width:760px){.app{grid-template-rows:56px auto 1fr;grid-template-columns:1fr;grid-template-areas:"top" "side" "main"}.side{flex-direction:row;overflow:auto;padding:6px 8px;border-right:0;border-bottom:1px solid var(--line)}.side .k,.side .gates{display:none}.nav{width:auto;white-space:nowrap}.nav+.nav::before{display:none}.g2{grid-template-columns:1fr}.umpanels{grid-template-columns:1fr}.wrap{padding:18px 16px 60px}.ticker{display:none}.drawer{width:100vw}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+<header class="top">
+ <span class="brand">Vetra<small>translational engine</small></span>
+ <span class="pill" id="progPill">Osteosarcoma · <span class="h">human</span> → <span class="d">dog</span></span>
+ <span class="spacer"></span>
+ <span class="ticker" id="ticker"><i></i><span id="tickerT">idle · not run</span></span>
+ <button class="btn primary" id="btnRun">Run end to end</button>
+ <button class="btn ghost" id="btnSkip" title="Fill every screen instantly">Skip to results</button>
+ <button class="btn ghost" id="btnLog">Activity</button>
+ <button class="btn ghost" id="btnReset">Reset</button>
+ <button class="btn ghost" id="btnTheme">Dark</button>
+</header>
+
+<nav class="side" id="side">
+ <div class="k">Program 01</div>
+ <button class="nav" data-s="hyp"><span class="num">1</span>Hypothesis<span class="dot" id="dot-hyp"></span></button>
+ <button class="nav" data-s="ev"><span class="num">2</span>Evidence<span class="dot" id="dot-ev"></span></button>
+ <button class="nav" data-s="st"><span class="num">3</span>Structure<span class="dot" id="dot-st"></span></button>
+ <button class="nav" data-s="wet"><span class="num">4</span>Wet lab<span class="dot" id="dot-wet"></span></button>
+ <button class="nav" data-s="tr"><span class="num">5</span>Trials<span class="dot" id="dot-tr"></span></button>
+ <div class="k" style="margin-top:22px">Portfolio</div>
+ <button class="nav" data-s="programs"><span class="num">·</span>Programs</button>
+ <div class="gates" id="sideGates">
+  <div class="k" style="padding:0 0 6px">Kill gates</div>
+  <div class="gate" data-g="1"><span>1 · pocket + expression</span><span class="s">—</span></div>
+  <div class="gate" data-g="2"><span>2 · kill experiment</span><span class="s">—</span></div>
+  <div class="gate" data-g="3"><span>3 · binds + uptake</span><span class="s">—</span></div>
+  <div class="gate" data-g="4"><span>4 · safe + signal</span><span class="s">—</span></div>
+ </div>
+</nav>
+
+<main id="main"><div class="wrap">
+
+<!-- HYPOTHESIS -->
+<section class="screen" id="s-hyp">
+ <div class="shead">
+  <div><div class="k">01 · Hypothesis engine</div><h1>Disease in, hypothesis out.</h1>
+   <p class="sub">Start with a disease, not a drug. The engine reads the literature, maps where treatment is stuck, and ranks targets that already have a clinical-stage drug.</p></div>
+  <div class="right agents"><span class="ag" id="ag-hyp"><i></i>Hypothesis agent</span></div>
+ </div>
+ <div class="hypbar">
+  <span class="k">Disease</span>
+  <input id="disease" type="text" value="osteosarcoma" autocomplete="off" spellcheck="false">
+  <span class="st" id="hypStat">PubMed · bioRxiv · ClinicalTrials.gov</span>
+  <button class="btn primary" id="btnHyp">Run engine</button>
+ </div>
+ <div id="hypEmpty" class="empty">
+  <h2>Nothing generated yet.</h2>
+  <p>Run the engine. Osteosarcoma is the reference program with every downstream stage computed; any other disease runs the hypothesis stage live.</p>
+  <div class="row"><button class="btn primary" data-run="hyp">Run engine</button><button class="btn" data-run="all">Run end to end</button></div>
+ </div>
+ <div id="hypBody" class="hide">
+  <div class="grid hero r">
+   <div class="grid" style="gap:16px;align-content:start">
+    <div class="card">
+     <div class="k"><span>Where treatment is stuck</span><span class="src">3 findings</span></div>
+     <div class="list" id="stuckList"></div>
+    </div>
+    <div class="card" id="stuckCard">
+     <div class="k"><span>Survival</span></div>
+     <div class="tabs" id="stuckTabs" style="margin-bottom:6px"></div>
+     <div class="chart" id="stuckFig"></div>
+    </div>
+   </div>
+   <div class="card">
+    <div class="k"><span>Targets with a clinical-stage drug</span><span class="src">ranked · expression × evidence × drug stage</span></div>
+    <div id="targets"></div>
+   </div>
+  </div>
+  <div class="hypline"><div class="tx" id="hypText"></div><button class="btn" id="btnToEv" disabled>Send to Evidence →</button></div>
+  <div class="note" id="hypNote" style="margin-top:12px"></div>
+ </div>
+</section>
+
+<!-- EVIDENCE -->
+<section class="screen" id="s-ev">
+ <div class="shead">
+  <div><div class="k">02 · Evidence</div><h1>Agents test the target in dogs.</h1>
+   <p class="sub">Three agents pull public datasets and ours and check the target in the animal. Every number links back to its source.</p></div>
+  <div class="right agents"><span class="ag" id="ag-expr"><i></i>Expression</span><span class="ag" id="ag-loc"><i></i>Localization</span><span class="ag" id="ag-out"><i></i>Outcome</span></div>
+ </div>
+ <div id="evEmpty" class="empty"><h2>Evidence agents haven't run.</h2><p>Send a hypothesis from the Hypothesis screen, or run the whole engine.</p><div class="row"><button class="btn primary" data-run="all">Run end to end</button></div></div>
+ <div id="evBody" class="hide grid">
+  <div class="grid g3">
+   <div class="card stat"><div class="k"><span>Tumour cells with FAP</span><a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE252470" target="_blank" rel="noopener">GSE252470</a></div><div class="n f" data-count="41.5" data-suffix="%">—</div><div class="l">of <b>11,987</b> dog tumour cells carry the transcript</div></div>
+   <div class="card stat"><div class="k"><span>FAP signal from tumour cells</span><a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE252470" target="_blank" rel="noopener">GSE252470</a></div><div class="n f" data-count="78" data-suffix="%">—</div><div class="l">not stroma. The drug was built for stroma; here the target is on the malignant cell.</div></div>
+   <div class="card stat"><div class="k"><span>Relapse by FAP · 186 dogs</span><span class="src">5 cohorts</span></div><div class="n am" data-count="1.44" data-prefix="HR " data-dec="2">—</div><div class="l"><b>95% CI 0.99–2.10</b> · P = 0.057. Points the right way; short of significance.</div></div>
+  </div>
+  <div class="grid hero">
+   <div class="card">
+    <div class="k"><span>Where it sits · one patient, cell by cell</span><span class="src">RNA · approximate embedding</span></div>
+    <div id="umapMount"></div>
+   </div>
+   <div class="card">
+    <div class="k"><span>Across datasets</span></div>
+    <div class="tabs" id="evTabs" style="margin-bottom:6px"></div>
+    <div class="chart" id="evFig"></div>
+   </div>
+  </div>
+  <div class="note" id="evGate"></div>
+ </div>
+</section>
+
+<!-- STRUCTURE -->
+<section class="screen" id="s-st">
+ <div class="shead">
+  <div><div class="k">03 · Structure</div><h1>Does the drug fit the dog protein?</h1>
+   <p class="sub">The Structure agent folds both species with ESM3, superposes them, defines the pocket from the human crystal, and docks the ligand.</p></div>
+  <div class="right"><span class="ag" id="ag-st"><i></i>Structure agent</span><a class="pill" href="https://www.rcsb.org/structure/6Y0F" target="_blank" rel="noopener" style="text-decoration:none">pocket · PDB 6Y0F</a></div>
+ </div>
+ <div id="stEmpty" class="empty"><h2>Structure agent hasn't run.</h2><p>It starts once the Evidence agents pass the expression half of gate 1.</p><div class="row"><button class="btn primary" data-run="all">Run end to end</button></div></div>
+ <div id="stBody" class="hide grid">
+  <div class="grid hero">
+   <div class="card" style="padding:14px">
+    <div class="row" style="justify-content:space-between;margin-bottom:12px">
+     <span class="seg"><button class="btn on" data-v="pair">Side by side</button><button class="btn" data-v="over">Overlay</button><button class="btn" data-v="pocket">Pocket</button></span>
+     <button class="btn ghost on" id="vSpin" style="background:transparent;color:var(--fap);border-color:transparent">Spin</button>
+    </div>
+    <div id="vPair" class="grid g2" style="gap:12px">
+     <div><div class="vcap"><span><span class="h">Human</span> FAP</span><span>734 res</span></div><div class="viewer" id="viewerH"></div></div>
+     <div><div class="vcap"><span><span class="d">Dog</span> FAP</span><span>734 res</span></div><div class="viewer" id="viewerD"></div></div>
+    </div>
+    <div id="vOver" class="hide"><div class="vcap"><span>Superposed · <span class="h">human</span> + <span class="d">dog</span></span><span>685 Cα · 1.11 Å</span></div><div class="viewer wide" id="viewerS"></div></div>
+    <div id="vPocket" class="hide">
+     <div class="vcap"><span><span class="f">teal</span> contact residues · <span class="am">amber</span> species differences</span><span id="pNote">whole protein</span></div>
+     <div class="viewer wide" id="viewerP"></div>
+     <div class="row" style="margin-top:10px"><span class="seg"><button class="btn on" data-p="all">Whole protein</button><button class="btn" data-p="zoom">Zoom to pocket</button><button class="btn" data-p="diff">Show the 49</button></span></div>
+    </div>
+    <div class="note" style="margin-top:10px" id="stLog">Loading structures…</div>
+   </div>
+   <div class="grid" style="gap:12px;align-content:start">
+    <div class="grid g2" style="gap:12px">
+     <div class="card stat sm"><div class="n" data-count="49" data-dec="0">—</div><div class="l">of 734 residues differ</div></div>
+     <div class="card stat sm"><div class="n f" id="stZero">—</div><div class="l">of them in the pocket</div></div>
+     <div class="card stat sm"><div class="n f" id="stContact">—</div><div class="l">contact residues identical</div></div>
+     <div class="card stat sm"><div class="n f" data-count="0.48" data-dec="2" data-suffix=" Å">—</div><div class="l">pocket backbone RMSD</div></div>
+     <div class="card stat sm"><div class="n" data-count="1.11" data-dec="2" data-suffix=" Å">—</div><div class="l">backbone RMSD · 685 Cα</div></div>
+     <div class="card stat sm"><div class="n" data-count="93.3" data-dec="1" data-suffix="%">—</div><div class="l">sequence identity</div></div>
+    </div>
+    <div class="card">
+     <div class="k"><span>Contact residues · human / dog</span><span class="src">UniProt numbering</span></div>
+     <div class="reschips" id="resGrid"></div>
+     <div class="note" style="margin-top:10px">Catalytic triad <span class="f">S624 · D702 · H734</span> identical in dog. Nearest species difference 11.7 Å from S624. UAMC-1110 docks with every pose touching S624 and H734 — a predicted pose, no co-crystal exists.</div>
+    </div>
+    <button class="btn primary" id="btnToWet" disabled style="padding:12px">Pocket conserved · Proceed to wet lab →</button>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- WET LAB -->
+<section class="screen" id="s-wet">
+ <div class="shead">
+  <div><div class="k">04 · Wet lab</div><h1>The engine writes the experiment.</h1>
+   <p class="sub">The cheapest experiment that can kill the hypothesis, with the pass mark fixed before any data comes back.</p></div>
+  <div class="right"><span class="ag" id="ag-wet"><i></i>Wet-lab agent</span><span class="pill a" id="wetStatus">not started</span></div>
+ </div>
+ <div id="wetEmpty" class="empty"><h2>No protocol yet.</h2><p>The Wet-lab agent writes the protocol once the pocket passes.</p><div class="row"><button class="btn primary" data-run="all">Run end to end</button></div></div>
+ <div id="wetBody" class="hide grid hero r">
+  <div class="card">
+   <div class="k"><span>Protocol · generated</span><span class="row"><button class="btn sm ghost" id="protoEdit">Edit</button><button class="btn sm ghost" id="protoCopy">Copy</button></span></div>
+   <div class="proto" id="proto"></div>
+   <div style="display:flex;justify-content:space-between;align-items:flex-end;border-top:1px solid var(--line);padding-top:14px;margin-top:18px">
+    <div><div class="k">cost</div><div style="font-family:var(--display);font-size:38px;line-height:1" id="wetCost">—</div><div class="note">three reagents · recombinant dog FAP is a catalogue item</div></div>
+    <span class="pill f" id="wetLock" style="visibility:hidden">pass mark locked before data</span>
+   </div>
+  </div>
+  <div class="card">
+   <div class="k"><span>Pass band · UAMC-1110 enzyme IC50</span><span class="src">log scale</span></div>
+   <div class="chart" id="band"></div>
+   <div class="grid g3" style="gap:10px;margin-top:8px">
+    <div class="card stat sm"><div class="k" style="margin-bottom:4px;color:var(--human)">human</div><div class="n" style="font-size:22px">3.3 nM</div></div>
+    <div class="card stat sm"><div class="k" style="margin-bottom:4px">mouse</div><div class="n" style="font-size:22px">3.2 nM</div><div class="l">0.97× human</div></div>
+    <div class="card stat sm" style="border-style:dashed;border-color:var(--dog)"><div class="k" style="margin-bottom:4px;color:var(--dog)">dog</div><div class="n" style="font-size:22px;color:var(--dog)" id="dogIC">—</div><div class="l" id="dogICn">never measured</div></div>
+   </div>
+   <div class="icin"><span class="k">Enter result when it arrives</span><input id="icIn" type="number" step="any" min="0" placeholder="dog IC50, nM"><span class="verdict" id="icVerdict">awaiting bench</span></div>
+   <div class="note" style="margin-top:10px">Pass = 0.33–33 nM. A fail is a fail; the hypothesis dies here before a single dog is dosed.</div>
+  </div>
+ </div>
+</section>
+
+<!-- TRIALS -->
+<section class="screen" id="s-tr">
+ <div class="shead">
+  <div><div class="k">05 · Trials</div><h1>Where the evidence stops, and what comes next.</h1>
+   <p class="sub">Four rungs by computation. One at the bench. Three need dogs — who are patients, not models: they get a therapy that does not otherwise exist for them.</p></div>
+  <div class="right"><span class="ag" id="ag-tr"><i></i>Trials agent</span><button class="btn ghost" id="ladBtn">Replay ladder</button></div>
+ </div>
+ <div id="trEmpty" class="empty"><h2>Trials agent hasn't run.</h2><p>It assembles the evidence ladder and the dog-trial plan after the wet-lab protocol is written.</p><div class="row"><button class="btn primary" data-run="all">Run end to end</button></div></div>
+ <div id="trBody" class="hide grid hero">
+  <div class="card">
+   <div class="k"><span>Evidence ladder · 8 rungs</span><span class="row"><span class="pill f">computation</span><span class="pill a">bench or dogs</span></span></div>
+   <div id="ladder">
+    <div class="rung" data-k="t"><i>1</i><div><b>Target is present in dog osteosarcoma</b><span>FAP on 41.5% of tumour cells; 78% of signal is tumour-cell</span></div><span class="r">Expression</span></div>
+    <div class="rung" data-k="t"><i>2a</i><div><b>Drug contact residues identical in dog</b><span>17 of 17</span></div><span class="r">Structure</span></div>
+    <div class="rung" data-k="t"><i>2b</i><div><b>The pocket has the same shape</b><span>0.48 Å pocket backbone RMSD</span></div><span class="r">Structure</span></div>
+    <div class="rung" data-k="t"><i>2c</i><div><b>Model places the drug in the catalytic pocket</b><span>all poses contact S624 and H734</span></div><span class="r">Structure</span></div>
+    <div class="rung" data-k="a"><i>2d</i><div><b>The drug binds dog FAP</b><span>enzyme assay · running now · $802</span></div><span class="r">bench</span></div>
+    <div class="rung" data-k="a"><i>3</i><div><b>The tracer reaches and stays in a dog tumour</b><span>FAP PET · gallium-68</span></div><span class="r">dogs</span></div>
+    <div class="rung" data-k="a"><i>4</i><div><b>Enough dose in the tumour, safe elsewhere</b><span>dosimetry · lutetium-177 / actinium-225</span></div><span class="r">dogs</span></div>
+    <div class="rung" data-k="a"><i>5</i><div><b>It works, by the proposed mechanism</b><span>randomised, biomarker-selected dog trial</span></div><span class="r">dogs</span></div>
+   </div>
+  </div>
+  <div class="grid" style="gap:12px;align-content:start">
+   <div class="card"><div class="k"><span>Trial plan · after the bench</span></div>
+    <div class="list">
+     <div class="li"><span>FAP PET in dogs with osteosarcoma</span><span class="m">gate 3 · uptake</span></div>
+     <div class="li"><span>Dosimetry on the therapeutic isotope</span><span class="m">gate 4 · safe</span></div>
+     <div class="li"><span>Randomised trial, oncologist network</span><span class="m">gate 4 · signal</span></div>
+     <div class="li"><span>Canine package for the human trial</span><span class="m">output</span></div>
+    </div></div>
+   <div class="card"><div class="k"><span>Why dogs</span></div>
+    <div style="font-size:13px;color:var(--ink-2);line-height:1.5">Same cancer, same drivers, full immune system, relapse to the lungs in <span class="d">months</span> where a human trial takes years.</div>
+    <div class="row" style="margin-top:10px"><span class="pill">TP53</span><span class="pill">SETD2</span><span class="pill">CDKN2A loss</span><span class="pill d">lung mets</span></div>
+    <div class="chart" id="loopFig" style="margin-top:12px"></div></div>
+  </div>
+ </div>
+</section>
+
+<!-- PROGRAMS -->
+<section class="screen" id="s-programs">
+ <div class="shead">
+  <div><div class="k">Portfolio</div><h1>All programs.</h1>
+   <p class="sub">The same engine runs any disease two species share, through the same four gates.</p></div>
+  <div class="right"><button class="btn primary" id="btnNewProg">+ New program</button></div>
+ </div>
+ <div class="phd"><span class="k">Disease pair</span><span class="k">Stage</span><span class="k">Gates</span><span class="k">Updated</span></div>
+ <div id="progList"></div>
+ <div class="card" style="margin-top:20px">
+  <div class="k"><span>The engine · four kill gates</span><span class="src">click a stage · step through</span></div>
+  <div id="engineMount"></div>
+ </div>
+</section>
+
+</div></main>
+</div>
+
+<aside class="drawer" id="drawer">
+ <div class="hd"><span class="k">Activity</span><button class="btn sm ghost" id="logClear">Clear</button><button class="btn sm ghost" id="logHide">Close</button></div>
+ <div class="stream" id="stream"><div class="ev sys"><span class="t">—</span><div><div class="who">system</div><div class="m">Idle. Run the engine to watch the agents work through the program end to end.</div></div></div></div>
+ <div class="ft"><label><input type="checkbox" id="follow" checked> follow the agents</label><span style="flex:1"></span><label>speed <select id="speed"><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option></select></label></div>
+</aside>
+<div class="toast" id="toast"></div>
+
+<script src="assets/charts.js"></script>
+<script src="assets/umapmod.js"></script>
+<script src="assets/flow.js"></script>
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id), qa=(s,r)=>[...(r||document).querySelectorAll(s)];
+const sleep=ms=>new Promise(r=>setTimeout(r,ms/SPEED()));
+let speedSel=null; const SPEED=()=>window.__skip?1e6:(speedSel?+speedSel.value:1);
+const C=window.VCharts;
+
+/* ---------- reference program ---------- */
+const REF={
+ stuck:[{t:'Human survival flat since 1980',m:'3 registry analyses'},{t:'Dogs relapse to the lungs in months',m:'human trials take years'},{t:'Dogs survive 4–14 months after diagnosis',m:'every standard of care'}],
+ figs:[{l:'Human · flat since 1980',f:C.humanFlat},{l:'Dogs · by treatment',f:C.dogSurvival}],
+ targets:[
+  {name:'FAP · radioligand',drug:'FAPI radioligand (⁶⁸Ga scan · ¹⁷⁷Lu / ²²⁵Ac treat)',why:'Used in a human osteosarcoma patient. Osteosarcoma builds its own scaffolding, so FAP ends up on the malignant cell.',where:'on the tumour cell',score:0.91,run:true},
+  {name:'B7-H3 (CD276) · radio-antibody',drug:'¹³¹I-omburtamab · enoblituzumab',why:'Expressed in human and canine osteosarcoma; antibody formats are heavier to carry across species than a small-molecule ligand.',where:'tumour cell surface',score:0.64},
+  {name:'HER2 · vaccine',drug:'ADXS31-164 (Listeria)',why:'Already trialled in dogs; occupied space, weaker fit for a repurposing engine.',where:'subset of tumours',score:0.47},
+  {name:'GD2 · antibody',drug:'dinutuximab',why:'Human recurrent-osteosarcoma trial did not meet its endpoint.',where:'tumour cell surface',score:0.38}],
+ hypothesis:'FAP-targeted radioligand, used in a human osteosarcoma patient. The target sits on the dog tumour cell itself. Repurpose in dogs.'
+};
+const CONTACT=[97,177,178,324,515,595,597,598,599,600,624,630,634,678,679,708,719], CAT=[598,676,708];
+const DIFFS=[7,10,11,13,19,27,46,49,52,59,67,86,105,108,110,115,117,151,159,184,204,247,248,249,252,286,300,309,391,406,413,439,445,454,489,497,501,524,528,529,541,553,633,645,710,711,715,716,721];
+const HU='assets/human_esm3_pdb.txt', DG='assets/dog_sup_pdb.txt';
+const ORDER=['hyp','ev','st','wet','tr'];
+const state={screen:'hyp',stage:{hyp:'idle',ev:'idle',st:'idle',wet:'idle',tr:'idle'},disease:'osteosarcoma',hyp:null,running:false,live:false,dogIC:null,programs:[]};
+let store={}; try{store=JSON.parse(localStorage.getItem('vetra.v2')||'{}')}catch(_){}
+function save(){try{localStorage.setItem('vetra.v2',JSON.stringify({done:isDone(),dogIC:state.dogIC,programs:state.programs}))}catch(_){}}
+const isDone=()=>Object.values(state.stage).every(v=>v==='done');
+let tt;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),1800)}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- navigation ---------- */
+function show(id,push){
+ state.screen=id;
+ qa('.screen').forEach(s=>s.classList.toggle('on',s.id==='s-'+id));
+ qa('.nav').forEach(n=>n.classList.toggle('on',n.dataset.s===id));
+ $('main').scrollTop=0;
+ if(id==='st'&&state.stage.st!=='idle')initViewers();
+ if(id==='ev'&&state.stage.ev!=='idle')setTimeout(()=>window.__umapRedraw&&window.__umapRedraw(),50);
+ if(id==='programs')setTimeout(()=>flow&&flow.redraw(),30);
+ if(push!==false){try{history.replaceState(null,'','#'+id)}catch(_){}}
+}
+qa('.nav').forEach(n=>n.onclick=()=>show(n.dataset.s));
+function setStage(id,v){state.stage[id]=v;
+ const d=$('dot-'+id);d.className='dot '+(v==='idle'?'':v==='done'?'done':v==='wait'?'wait':'run');
+ const n=Object.values(state.stage).filter(x=>x==='done').length;
+ const tk=$('ticker');tk.className='ticker '+(state.running?'run':isDone()?'done':'');
+ if(!state.running)$('tickerT').textContent=isDone()?'complete · wet lab pending at the bench':n?`${n} of 5 stages`:'idle · not run';
+ renderPrograms();}
+function setAgent(id,v,txt){const e=$('ag-'+id);if(!e)return;e.className='ag '+(v==='idle'?'':v);const lbl=e.textContent.split('·')[0].trim();e.innerHTML=`<i></i>${lbl}${txt?' · '+txt:''}`}
+function setGate(n,s,k){const g=document.querySelector(`.gate[data-g="${n}"]`);g.className='gate '+(k||'');g.querySelector('.s').textContent=s}
+
+/* ---------- log ---------- */
+const t0=Date.now();
+function log(who,m,kind){const s=$('stream');const e=document.createElement('div');e.className='ev '+(kind||'');const dt=((Date.now()-t0)/1000).toFixed(1).padStart(5,' ');e.innerHTML=`<span class="t">${dt}s</span><div><div class="who">${who}</div><div class="m">${m}</div></div>`;s.appendChild(e);s.scrollTop=s.scrollHeight;
+ if(state.running){$('tickerT').innerHTML=`<b>${who}</b> · ${m.replace(/<[^>]+>/g,'')}`}}
+$('logClear').onclick=()=>{$('stream').innerHTML=''};
+$('logHide').onclick=()=>$('drawer').classList.remove('open');
+$('btnLog').onclick=()=>$('drawer').classList.toggle('open');
+
+/* ---------- motion helpers ---------- */
+function countUp(el){const to=+el.dataset.count,dec=el.dataset.dec!==undefined?+el.dataset.dec:(String(to).split('.')[1]||'').length,pre=el.dataset.prefix||'',suf=el.dataset.suffix||'';if(window.__skip){el.textContent=pre+to.toFixed(dec)+suf;return}const st=performance.now(),D=900/Math.min(SPEED(),4);(function f(n){const p=Math.min(1,(n-st)/D),e=1-Math.pow(1-p,3);el.textContent=pre+(to*e).toFixed(dec)+suf;if(p<1)requestAnimationFrame(f)})(st)}
+function typeInto(el,html,ms){return new Promise(res=>{if(window.__skip){el.innerHTML=html;return res()}const tmp=document.createElement('div');tmp.innerHTML=html;const txt=tmp.textContent;let i=0;const per=Math.max(6,(ms||1400)/txt.length)/SPEED();const cur=document.createElement('span');cur.className='cur';(function tick(){i++;el.textContent=txt.slice(0,i);el.appendChild(cur);if(i<txt.length)setTimeout(tick,per);else{el.innerHTML=html;res()}})()})}
+function follow(id){if($('follow').checked&&state.screen!==id)show(id)}
+function tabs(host,fig,items){host.innerHTML='';items.forEach((it,i)=>{const b=document.createElement('button');b.className='btn'+(i?'':' on');b.textContent=it.l;b.onclick=()=>{qa('button',host).forEach(x=>x.classList.remove('on'));b.classList.add('on');fig.innerHTML=it.f()};host.appendChild(b)});fig.innerHTML=items.length?items[0].f():''}
+
+/* ================= HYPOTHESIS ================= */
+function renderHyp(data,sel){
+ $('hypEmpty').classList.add('hide');$('hypBody').classList.remove('hide');
+ $('stuckList').innerHTML=data.stuck.map(s=>`<div class="li"><span>${esc(s.t)}</span><span class="m">${esc(s.m||'')}</span></div>`).join('');
+ tabs($('stuckTabs'),$('stuckFig'),data.figs||[]);$('stuckCard').classList.toggle('hide',!(data.figs&&data.figs.length));
+ const T=$('targets');T.innerHTML='';
+ data.targets.forEach((t,i)=>{const d=document.createElement('div');d.className='target'+(i===(sel||0)?' on':'');
+  d.innerHTML=`<div><div class="n">${esc(t.name)}</div><div class="w">${esc(t.drug?t.drug+' · ':'')}${esc(t.why||'')}</div><div class="row" style="margin-top:8px"><span class="pill ${i===(sel||0)?'f':''}">${esc(t.where||'')}</span>${t.run?'<span class="pill f">run through the gates</span>':'<span class="pill">candidate · not run</span>'}</div></div><div class="sc">${(t.score||0).toFixed(2)}<small>score</small></div>`;
+  d.onclick=()=>{qa('.target',T).forEach(x=>x.classList.remove('on'));d.classList.add('on');if(!t.run)toast('Only the FAP program has been run through the gates in this build')};
+  T.appendChild(d)});
+}
+async function runHyp(){
+ const disease=($('disease').value||'').trim()||'osteosarcoma';state.disease=disease;
+ const isRef=/osteosarcoma|\bosa\b/i.test(disease);
+ setStage('hyp','run');setAgent('hyp','run','reading');$('btnHyp').disabled=true;$('btnToEv').disabled=true;$('hypText').innerHTML='';
+ follow('hyp');$('hypStat').textContent='reading literature';
+ log('hypothesis',`Reading literature for <b>${esc(disease)}</b> · PubMed, bioRxiv, ClinicalTrials.gov`);
+ let data;
+ if(isRef){
+  await sleep(900);data=REF;
+  log('hypothesis','Mapped where treatment is stuck · 3 findings, 3 survival analyses');
+  renderHyp(data,0);await sleep(700);$('hypStat').textContent='ranking targets';
+  log('hypothesis','Ranked 4 targets with a clinical-stage drug · top: <b>FAP</b>, radioligand used in a human osteosarcoma patient');
+  await sleep(600);
+  $('hypNote').textContent='Reference program. Every downstream stage was computed on ESM3 structures, GSE252470 and five outcome cohorts; the bench assay is live.';
+ }else{
+  data=await liveHyp(disease);
+  if(!data){setStage('hyp','idle');setAgent('hyp','idle');$('btnHyp').disabled=false;$('hypStat').textContent='live generation unavailable in this view';return false}
+  data.figs=[];renderHyp(data,0);
+  $('hypNote').textContent='Generated live for this disease. Evidence, Structure and Wet-lab agents need datasets and structures for the chosen target and have not been run on it; only the osteosarcoma reference program is computed end to end in this build.';
+  state.live=true;
+ }
+ $('hypStat').textContent='writing the hypothesis';
+ await typeInto($('hypText'),`<b>Hypothesis</b>${esc(data.hypothesis)}`,1600);
+ log('hypothesis',`Hypothesis written → Evidence: <i>${esc(data.hypothesis)}</i>`,'pass');
+ setAgent('hyp','done','done');setStage('hyp','done');$('btnHyp').disabled=false;$('btnToEv').disabled=false;$('hypStat').textContent=isRef?'reference program':'generated live';
+ state.hyp={disease,data,isRef};addProgram(disease,isRef);
+ return true;
+}
+async function liveHyp(disease){
+ let sample=null;try{sample=await (window.claude&&window.claude.use?window.claude.use('sample'):null)}catch(_){sample=null}
+ if(!sample){log('hypothesis','Live generation needs Claude access in this view (not granted here). Use <b>osteosarcoma</b> for the reference program.','fail');toast('Live generation isn\'t available in this view');return null}
+ log('hypothesis','Asking Claude to map the landscape and rank targets with a clinical-stage drug…');
+ $('hypStat').textContent='asking Claude · ~20 s';
+ const prompt=`You are the hypothesis engine of Vetra, an animal-first translational engine: it takes a disease that both humans and dogs (or another companion/veterinary species) get, finds human targets that already have a clinical-stage drug, and repurposes that drug in the animal first.
+Disease: ${disease}
+Return STRICT JSON only, no prose, with this shape:
+{"stuck":[{"t":"short finding on where treatment is stuck (<=70 chars)","m":"source hint (<=30 chars)"}], "targets":[{"name":"TARGET · modality","drug":"named drug(s)","why":"one sentence on why, including species-conservation or expression notes","where":"where the target sits (<=28 chars)","score":0.0-1.0}], "hypothesis":"one or two sentences: drug X targeting Y, used in humans for ${disease}; repurpose in dogs/the animal."}
+Rules: 3 stuck findings; 3-4 targets ranked by score descending; only real targets and real clinical-stage or approved drugs; be conservative and factual; if the disease is not shared with dogs, say so in the hypothesis and choose the companion species that does get it.`;
+ try{
+  const v=await sample.json(prompt,{modelTier:'default'});
+  if(!v||!Array.isArray(v.targets)||!v.targets.length)throw new Error('bad shape');
+  v.stuck=(v.stuck||[]).slice(0,4);v.targets=v.targets.slice(0,4).map(t=>({name:String(t.name||''),drug:String(t.drug||''),why:String(t.why||''),where:String(t.where||''),score:+t.score||0}));
+  log('hypothesis',`Mapped ${v.stuck.length} findings · ranked ${v.targets.length} targets · top: <b>${esc(v.targets[0].name)}</b>`);
+  return v;
+ }catch(e){const code=e&&e.code;log('hypothesis',code==='not_granted'?'Claude access was not granted for this page.':code==='rate_limited'?'Rate limited; try again in a minute.':'Generation failed: '+esc(e.message||String(e)),'fail');return null}
+}
+$('btnHyp').onclick=()=>{if(!state.running)runHyp()};
+$('disease').addEventListener('keydown',e=>{if(e.key==='Enter'&&!state.running)runHyp()});
+$('btnToEv').onclick=()=>{if(state.running)return;if(state.live){toast('Evidence agents are not wired for live programs in this build');show('ev');return}runFrom('ev')};
+
+/* ================= EVIDENCE ================= */
+let umapMounted=false,evTabsBuilt=false;
+function evShowBody(){$('evEmpty').classList.add('hide');$('evBody').classList.remove('hide');
+ if(!evTabsBuilt){evTabsBuilt=true;tabs($('evTabs'),$('evFig'),[{l:'FAP in dog cells',f:C.fapCells},{l:'Seven datasets',f:C.fiveDatasets},{l:'Relapse by FAP',f:C.relapseKM}])}
+ if(!umapMounted&&window.mountUMAP){umapMounted=true;window.mountUMAP($('umapMount'),'assets/umap.json')}}
+async function runEv(){
+ setStage('ev','run');follow('ev');evShowBody();
+ const tiles=qa('#s-ev .stat .n');const n=i=>countUp(tiles[i]);
+ setAgent('expr','run','loading');setAgent('loc','run','waiting');setAgent('out','run','pooling');
+ log('expression','Loading <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE252470" target="_blank" rel="noopener">GSE252470</a> · 6 dogs · 32,613 cells · annotating tumour cells');
+ log('outcome','Pooling 5 canine cohorts · 186 dogs · 143 relapses · splitting on FAP');
+ await sleep(1400);
+ log('expression','11,987 tumour cells · <b>41.5%</b> carry the FAP transcript','pass');n(0);await sleep(500);setAgent('expr','done','done');
+ log('localization','Attributing FAP signal by compartment · <b>78%</b> comes from tumour cells, not stroma','pass');n(1);await sleep(700);
+ log('localization','Single-patient embedding · FAP⁺ cells sit in the osteoblastic tumour territory');setAgent('loc','done','done');
+ setTimeout(()=>window.__umapRedraw&&window.__umapRedraw(),100);await sleep(900);
+ log('outcome','Cox model · <b>HR 1.44</b> · 95% CI 0.99–2.10 · P = 0.057. Points the right way; not significant.','gate');n(2);setAgent('out','done','done');
+ await sleep(500);
+ $('evGate').innerHTML='<span class="f">Gate 1 · expression half passed</span> · target present on the dog tumour cell → Structure agent';
+ setGate(1,'expression ✓ · pocket …','w');
+ log('gate 1','Expression half passed · FAP is present on dog osteosarcoma cells → Structure agent','pass');
+ setStage('ev','done');
+}
+
+/* ================= STRUCTURE ================= */
+let VH=null,VD=null,VS=null,VP=null,spin=true,pdbH=null,pdbD=null,viewersInit=false;
+const grab=u=>fetch(u).then(r=>r.text());
+const isLight=()=>document.documentElement.getAttribute('data-theme')==='light';
+const PAL=()=>isLight()?{bg:'#e9e3d6',human:'#2b6a9a',dog:'#b06d26',fap:'#17775f',grey:'#a39b8d',amber:'#b06d26'}:{bg:'#0b0906',human:'#6fb0e0',dog:'#e0a05a',fap:'#4fcaa6',grey:'#3f4a52',amber:'#e0a05a'};
+function mk(id){return $3Dmol.createViewer($(id),{backgroundColor:PAL().bg,antialias:true})}
+let pocketM='all';
+function restyleViewers(){const P=PAL();
+ if(VH){VH.setBackgroundColor(P.bg);VH.setStyle({},{cartoon:{color:P.human}});VH.addStyle({resi:CAT},{sphere:{color:P.fap,radius:1.6}});VH.render()}
+ if(VD){VD.setBackgroundColor(P.bg);VD.setStyle({},{cartoon:{color:P.dog}});VD.addStyle({resi:CAT},{sphere:{color:P.fap,radius:1.6}});VD.render()}
+ if(VS){VS.setBackgroundColor(P.bg);VS.setStyle({model:0},{cartoon:{color:P.human,opacity:.9}});VS.setStyle({model:1},{cartoon:{color:P.dog,opacity:.9}});VS.render()}
+ if(VP){VP.setBackgroundColor(P.bg);pocketMode(pocketM)}}
+async function loadPDB(){if(pdbH)return;[pdbH,pdbD]=await Promise.all([grab(HU),grab(DG)])}
+async function initViewers(){
+ if(viewersInit||typeof $3Dmol==='undefined')return;viewersInit=true;
+ try{await loadPDB()}catch(e){$('stLog').textContent='Could not load structures.';return}
+ VH=mk('viewerH');VD=mk('viewerD');
+ const P=PAL();VH.addModel(pdbH,'pdb');VH.setStyle({},{cartoon:{color:P.human}});VH.addStyle({resi:CAT},{sphere:{color:P.fap,radius:1.6}});VH.zoomTo();VH.zoom(1.2);VH.render();
+ VD.addModel(pdbD,'pdb');VD.setStyle({},{cartoon:{color:P.dog}});VD.addStyle({resi:CAT},{sphere:{color:P.fap,radius:1.6}});VD.zoomTo();VD.zoom(1.2);VD.render();
+ applySpin();
+ $('stLog').innerHTML='ESM3 backbones · predictions, not solved structures. <span class="f">Teal spheres</span>: catalytic triad S624 · D702 · H734 (UniProt numbering = model residue + 26).';
+ buildRes();
+}
+function initOver(){if(VS||!pdbH)return;const P=PAL();VS=mk('viewerS');VS.addModel(pdbH,'pdb');VS.addModel(pdbD,'pdb');VS.setStyle({model:0},{cartoon:{color:P.human,opacity:.9}});VS.setStyle({model:1},{cartoon:{color:P.dog,opacity:.9}});VS.zoomTo();VS.zoom(1.25);VS.render();applySpin()}
+function initPocket(){if(VP||!pdbH)return;VP=mk('viewerP');VP.addModel(pdbH,'pdb');pocketMode('all')}
+function pocketMode(m){if(!VP)return;pocketM=m;const P=PAL();
+ VP.setStyle({},{cartoon:{color:P.grey,opacity:m==='zoom'?.35:.55}});
+ if(m==='diff')VP.addStyle({resi:DIFFS},{sphere:{color:P.amber,radius:1.5}});
+ VP.addStyle({resi:CONTACT},{stick:{color:P.fap,radius:m==='zoom'?.5:.45}});
+ VP.addStyle({resi:CAT},{sphere:{color:P.fap,radius:m==='zoom'?1.7:1.5}});
+ if(m==='zoom'){VP.zoomTo({resi:CONTACT});VP.zoom(.85)}else{VP.zoomTo();VP.zoom(1.2)}
+ VP.render();qa('[data-p]').forEach(b=>b.classList.toggle('on',b.dataset.p===m));
+ $('pNote').textContent={all:'whole protein · 17 contact residues',zoom:'inside the pocket · every residue identical in dog',diff:'all 49 species differences · none reaches the pocket'}[m];
+ if(m==='zoom')VP.spin(false);else applySpin();}
+function applySpin(){[VH,VD,VS,VP].forEach(v=>{if(v){v.spin(spin?'y':false,0.5);v.render()}})}
+$('vSpin').onclick=()=>{spin=!spin;$('vSpin').style.color=spin?'var(--fap)':'var(--muted)';applySpin()};
+qa('[data-v]').forEach(b=>b.onclick=()=>viewMode(b.dataset.v));
+function viewMode(v){qa('[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+ $('vPair').classList.toggle('hide',v!=='pair');$('vOver').classList.toggle('hide',v!=='over');$('vPocket').classList.toggle('hide',v!=='pocket');
+ if(v==='over')initOver();if(v==='pocket')initPocket();
+ setTimeout(()=>{[VH,VD,VS,VP].forEach(x=>{if(x){x.resize();x.render()}})},60)}
+qa('[data-p]').forEach(b=>b.onclick=()=>pocketMode(b.dataset.p));
+const ONE={ALA:'A',ARG:'R',ASN:'N',ASP:'D',CYS:'C',GLN:'Q',GLU:'E',GLY:'G',HIS:'H',ILE:'I',LEU:'L',LYS:'K',MET:'M',PHE:'F',PRO:'P',SER:'S',THR:'T',TRP:'W',TYR:'Y',VAL:'V'};
+function seqOf(t){const m={};t.split('\n').forEach(l=>{if(l.startsWith('ATOM')&&l.substr(12,4).trim()==='CA')m[+l.substr(22,4)]=ONE[l.substr(17,3)]||'?'});return m}
+function buildRes(){const G=$('resGrid');if(G.children.length)return;const h=seqOf(pdbH),d=seqOf(pdbD);CONTACT.forEach(r=>{const e=document.createElement('span');e.className='res'+(CAT.includes(r)?' cat':'');e.title=`human ${h[r]} · dog ${d[r]}`;e.textContent=`${h[r]}${r+26}`+(h[r]===d[r]?'':' ≠ '+d[r]);G.appendChild(e)})}
+async function runSt(){
+ setStage('st','run');follow('st');$('stEmpty').classList.add('hide');$('stBody').classList.remove('hide');
+ setAgent('st','run','folding');
+ log('structure','Folding human FAP ectodomain · ESM3 · 734 residues');
+ const p=initViewers();
+ const tiles=qa('#s-st .stat .n[data-count]');
+ await sleep(1000);log('structure','Folding dog FAP · ESM3 · 734 residues');await sleep(900);
+ log('structure','Superposing · 685 Cα · backbone RMSD <b>1.11 Å</b>');countUp(tiles[2]);await sleep(800);
+ log('structure','Aligning sequences · <b>49</b> of 734 residues differ · 93.3% identity');countUp(tiles[0]);countUp(tiles[3]);await sleep(800);
+ log('structure','Pocket from the human crystal <a href="https://www.rcsb.org/structure/6Y0F" target="_blank" rel="noopener">6Y0F</a> · 17 contact residues · catalytic triad S624 D702 H734');await sleep(700);
+ $('stContact').textContent='17/17';$('stZero').textContent='0';countUp(tiles[1]);
+ log('structure','<b>17/17</b> contact residues identical in dog · pocket backbone RMSD <b>0.48 Å</b> · nearest species difference 11.7 Å from S624','pass');await sleep(800);
+ log('structure','Docking UAMC-1110 · all poses contact S624 and H734 · <i>predicted pose</i>');await sleep(600);
+ await p;
+ setAgent('st','done','done');$('btnToWet').disabled=false;setGate(1,'passed','p');
+ log('gate 1','Pocket half passed · <b>gate 1 cleared</b>: pocket + expression → Wet-lab agent','pass');
+ setStage('st','done');
+}
+$('btnToWet').onclick=()=>{if(!state.running)runFrom('wet')};
+
+/* ================= WET LAB ================= */
+const PROTO=[['assay','FAP enzyme inhibition · fluorogenic substrate'],['protein','recombinant <span class="d">dog</span> FAP · catalogue item'],['reference','recombinant <span class="h">human</span> FAP · same lot format'],['ligand','UAMC-1110 · 8-point dilution, triplicate'],['readout','IC50 · dog vs human, same plate'],['pass','dog IC50 within 10× of human · 0.33–33 nM'],['decision','fail → hypothesis closed · pass → FAP PET in dogs']];
+function drawBand(){$('band').innerHTML=C.icBand(state.dogIC)}
+function icVerdict(){const v=parseFloat($('icIn').value);const V=$('icVerdict');state.dogIC=isNaN(v)?null:v;drawBand();
+ if(isNaN(v)){V.className='verdict';V.textContent='awaiting bench';$('dogIC').textContent='—';$('dogICn').textContent='never measured';$('wetStatus').textContent=state.stage.wet==='idle'?'not started':'running at the bench';$('wetStatus').className='pill a';if(state.stage.wet!=='idle'){setGate(2,'at the bench','w');resetRung(4)}save();return}
+ const ok=v>=.33&&v<=33;V.className='verdict '+(ok?'pass':'fail');V.textContent=ok?`pass · ${(v/3.3).toFixed(2)}× human`:`fail · ${(v/3.3).toFixed(1)}× human`;$('dogIC').textContent=v+' nM';$('dogICn').textContent=(v/3.3).toFixed(2)+'× human · entered';
+ $('wetStatus').textContent=ok?'gate 2 passed':'gate 2 failed · hypothesis closed';$('wetStatus').className='pill '+(ok?'f':'k');
+ setGate(2,ok?'passed':'failed',ok?'p':'');setRung(4,ok?'t':'x');save();}
+$('icIn').addEventListener('input',icVerdict);
+$('protoEdit').onclick=()=>{const on=$('protoEdit').classList.toggle('on');qa('#proto .ln').forEach(l=>l.contentEditable=on?'true':'false');$('protoEdit').textContent=on?'Done':'Edit'};
+$('protoCopy').onclick=async()=>{try{await navigator.clipboard.writeText(qa('#proto .pl').map(r=>r.textContent.replace(/\s+/g,' ').trim()).join('\n'));toast('Protocol copied')}catch(_){toast('Copy not available here')}};
+async function runWet(){
+ setStage('wet','run');follow('wet');$('wetEmpty').classList.add('hide');$('wetBody').classList.remove('hide');
+ setAgent('wet','run','writing');$('wetStatus').textContent='writing protocol';
+ const P=$('proto');P.innerHTML='';drawBand();
+ log('wet lab','Searching for the cheapest experiment that can kill the hypothesis');await sleep(700);
+ log('wet lab','Recombinant dog FAP is a catalogue item · no cloning needed');await sleep(500);
+ for(let i=0;i<PROTO.length;i++){const r=document.createElement('div');r.className='pl';r.innerHTML=`<span class="n">${String(i+1).padStart(2,'0')}</span><span class="key">${PROTO[i][0]}</span><span class="ln">${PROTO[i][1]}</span>`;P.appendChild(r);await sleep(260)}
+ log('wet lab','Pass mark locked before data: dog IC50 within 10× of human · <b>0.33–33 nM</b> · human 3.3 nM, mouse 3.2 nM, dog never measured','gate');
+ $('wetLock').style.visibility='visible';await sleep(500);
+ $('wetCost').textContent='$802';log('wet lab','Costed · 3 reagents · <b>$802</b> · ordered');await sleep(500);
+ setAgent('wet','wait','at the bench');$('wetStatus').textContent='running at the bench';setGate(2,'at the bench','w');
+ log('gate 2','Kill experiment running at the bench · result pending → Trials agent plans the dog work in parallel','gate');
+ setStage('wet','done');if(state.dogIC!=null){$('icIn').value=state.dogIC;icVerdict()}
+}
+
+/* ================= TRIALS ================= */
+const rungs=()=>qa('.rung');let lt=[];
+function resetRung(i){const r=rungs()[i];if(!r)return;r.className='rung '+(r.dataset.k==='t'?'lit':'amb');r.querySelector('span').textContent='enzyme assay · running now · $802'}
+function setRung(i,k){const r=rungs()[i];if(!r)return;r.classList.remove('lit','amb','x');r.classList.add(k==='t'?'lit':k==='x'?'x':'amb');r.querySelector('span').textContent=k==='x'?'failed at the bench · hypothesis closed':k==='t'?'passed at the bench':'enzyme assay · running now · $802'}
+function ladder(){lt.forEach(clearTimeout);lt=[];rungs().forEach(r=>r.classList.remove('lit','amb','x'));rungs().forEach((r,i)=>lt.push(setTimeout(()=>r.classList.add(r.dataset.k==='t'?'lit':'amb'),(window.__skip?0:240)*i/SPEED())));if(state.dogIC!=null)setTimeout(()=>icVerdict(),(window.__skip?0:240)*9/SPEED())}
+$('ladBtn').onclick=ladder;
+async function runTr(){
+ setStage('tr','run');follow('tr');$('trEmpty').classList.add('hide');$('trBody').classList.remove('hide');
+ setAgent('tr','run','assembling');$('loopFig').innerHTML=C.loop();
+ log('trials','Assembling the evidence ladder · 8 rungs');ladder();await sleep(1200);
+ log('trials','4 of 8 rungs verified by computation · 1 at the bench · 3 need dogs','pass');await sleep(500);
+ setGate(3,'needs dogs','');setGate(4,'needs dogs','');
+ log('trials','Planned: FAP PET (gallium-68) → dosimetry (lutetium-177 / actinium-225) → randomised, biomarker-selected dog trial through the oncologist network');await sleep(600);
+ setAgent('tr','done','plan ready');log('system','Program 01 complete through computation. Gates 3–4 wait on the bench result.','pass');
+ setStage('tr','done');save();
+}
+
+/* ================= PROGRAMS ================= */
+let flow=null;
+function addProgram(disease,isRef){const n=disease.trim().toLowerCase();if(isRef)return;if(!state.programs.some(p=>p.d===n))state.programs.push({d:n,at:Date.now()});save();renderPrograms()}
+function renderPrograms(){const L=$('progList');if(!L)return;const st=state.stage;const g=[st.st==='done'?'p':'',st.wet==='done'?'w':'','',''];
+ const stageTxt=st.tr==='done'?'Wet lab · at the bench':st.wet!=='idle'?'Wet lab':st.st!=='idle'?'Structure':st.ev!=='idle'?'Evidence':st.hyp!=='idle'?'Hypothesis':'Not run';
+ let h=`<div class="prow on" data-go="hyp"><span>Osteosarcoma · <span class="h">human</span> → <span class="d">dog</span></span><span class="mono" style="font-size:11px;color:var(--dog)">${stageTxt}</span><span class="gs">${g.map(x=>`<b class="${x}"></b>`).join('')}</span><span class="mono" style="font-size:10.5px;color:var(--muted)">today</span></div>`;
+ state.programs.forEach(p=>{h+=`<div class="prow" data-go="hyp" data-d="${esc(p.d)}"><span style="text-transform:capitalize">${esc(p.d)} · <span class="h">human</span> → <span class="d">dog</span></span><span class="mono" style="font-size:11px;color:var(--muted)">Hypothesis · live</span><span class="gs"><b></b><b></b><b></b><b></b></span><span class="mono" style="font-size:10.5px;color:var(--muted)">${new Date(p.at).toLocaleDateString()}</span></div>`});
+ h+=`<div class="prow new" data-go="new"><span>+ New disease pair</span><span class="mono" style="font-size:11px">Hypothesis</span><span class="gs"><b></b><b></b><b></b><b></b></span><span></span></div>`;
+ L.innerHTML=h;qa('.prow',L).forEach(r=>r.onclick=()=>{if(r.dataset.go==='new'){$('disease').value='';show('hyp');$('disease').focus()}else{if(r.dataset.d)$('disease').value=r.dataset.d;show('hyp')}})}
+$('btnNewProg').onclick=()=>{$('disease').value='';show('hyp');$('disease').focus()};
+function mountEngine(){if(flow||!window.mountFlow)return;flow=window.mountFlow($('engineMount'),{
+  stages:[{n:'1',title:'Find targets',lines:['Disease in. Human targets that already have a clinical-stage drug, ranked.'],gate:'pocket + expression'},{n:'2',title:'Test in silico',lines:['Evidence and Structure agents check the target and the pocket in the dog.'],gate:'kill experiment'},{n:'3',title:'Wet lab',lines:['Canine protein, cells and tissue. The cheapest experiment that can kill it.'],gate:'binds + uptake'},{n:'4',title:'Dog trials',lines:['Oncologist network, biomarker-selected patients.'],gate:'safe + signal'}],
+  feedback:{from:3,to:1,label:'bench results retrain target finding and ranking'},
+  outputs:[{title:'Veterinary product',sub:'conditional-approval path'},{title:'Translational data',sub:'canine package for pharma'},{title:'Labeled examples',sub:'sharpen the next program'}]})}
+
+/* ================= ORCHESTRATOR ================= */
+async function runFrom(start){
+ if(state.running)return;state.running=true;$('btnRun').disabled=true;$('btnSkip').disabled=true;$('ticker').className='ticker run';
+ const i0=ORDER.indexOf(start);
+ if(i0<=0){ if(!(/osteosarcoma|\bosa\b/i.test($('disease').value||'')))$('disease').value='osteosarcoma'; log('system','Run started · program 01 · osteosarcoma · human → dog','sys'); const ok=await runHyp(); if(!ok){end();return} }
+ for(const id of ORDER.slice(Math.max(i0,1))){ if(state.stage[id]==='done')continue; await ({ev:runEv,st:runSt,wet:runWet,tr:runTr}[id])(); }
+ end();
+ function end(){state.running=false;$('btnRun').disabled=false;$('btnSkip').disabled=false;setStage('tr',state.stage.tr);window.__skip=false;save()}
+}
+$('btnRun').onclick=()=>runFrom('hyp');
+$('btnSkip').onclick=async()=>{window.__skip=true;const f=$('follow').checked;$('follow').checked=false;await runFrom('hyp');$('follow').checked=f;window.__skip=false;setTimeout(()=>{window.__umapRedraw&&window.__umapRedraw();flow&&flow.redraw()},80)};
+qa('[data-run]').forEach(b=>b.onclick=()=>b.dataset.run==='hyp'?runHyp():runFrom('hyp'));
+$('btnReset').onclick=()=>{try{localStorage.removeItem('vetra.v2')}catch(_){}location.hash='';location.reload()};
+speedSel=$('speed');
+
+/* ================= theme ================= */
+function setTheme(t){const r=document.documentElement;if(t==='light')r.setAttribute('data-theme','light');else r.removeAttribute('data-theme');$('btnTheme').textContent=t==='light'?'Dark':'Light';try{localStorage.setItem('vetra.theme',t)}catch(_){}
+ restyleViewers();if(window.__umapRedraw)window.__umapRedraw();if(flow)flow.redraw()}
+$('btnTheme').onclick=()=>setTheme(isLight()?'dark':'light');
+let th='light';try{th=localStorage.getItem('vetra.theme')||'light'}catch(_){}
+setTheme(th);
+/* ================= boot ================= */
+mountEngine();
+const h0=(location.hash||'').replace('#','');
+show(['hyp','ev','st','wet','tr','programs'].includes(h0)?h0:'hyp',false);
+addEventListener('hashchange',()=>{const h=(location.hash||'').replace('#','');if(['hyp','ev','st','wet','tr','programs'].includes(h)&&h!==state.screen)show(h,false)});
+if(store.programs)state.programs=store.programs;
+if(store.dogIC!=null){state.dogIC=store.dogIC;$('icIn').value=store.dogIC}
+if(store.done){window.__skip=true;const f0=$('follow').checked;$('follow').checked=false;runFrom('hyp').then(()=>{window.__skip=false;$('follow').checked=f0;$('stream').innerHTML='';log('system','Restored the completed run from this browser. Reset to replay the agents.','sys');setTimeout(()=>{window.__umapRedraw&&window.__umapRedraw()},80)})}
+renderPrograms();
+})();
+</script>
+</body>
+</html>
